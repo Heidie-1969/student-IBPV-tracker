@@ -52,16 +52,7 @@ const generateUniqueId = (prefix: string): string => {
   const delta = 0.01;
   return `https://www.openstreetmap.org/export/embed.html?bbox=${lng - delta},${lat - delta},${lng + delta},${lat + delta}&layer=mapnik&marker=${lat},${lng}`;
 };
-  const getMapUrl = (student: any): string => {
-  if (!student) return "https://www.openstreetmap.org/export/embed.html?bbox=-4.5,36.5,-4.3,36.9&layer=mapnik";
-  // Standaard coördinaten van Málaga als back-up
-  const lat = student.latitude || 36.7213;
-  const lng = student.longitude || -4.4214;
-  const delta = 0.01;
   return `https://www.openstreetmap.org/export/embed.html?bbox=${lng - delta},${lat - delta},${lng + delta},${lat + delta}&layer=mapnik&marker=${lat},${lng}`;
-};
-};
-
 const PRESET_CITIES = [
   { name: 'Málaga', country: 'Spanje', latitude: 36.7213, longitude: -4.4214, org: 'Inacua Centro Raqueta Málaga' },
   { name: 'Barcelona', country: 'Spanje', latitude: 41.3851, longitude: 2.1734, org: 'Club de Padel Barcelona' },
