@@ -481,8 +481,23 @@ export default function App() {
     return matches && s.status === statusFilter;
   });
 
-  const activeStudent = students.find(s => s.id === activeStudentId) || students[0];
-
+  const activeStudent = students.find(s => s.id === activeStudentId) || students[0] || null;
+if (currentRole === 'COÖRDINATOR' && students.length === 0) {
+  return (
+    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-8 text-center">
+      <div className="max-w-md w-full bg-white border p-8 rounded-2xl shadow-xl">
+        <h2 className="text-lg font-bold text-slate-800">Welkom in het Coördinator Dashboard</h2>
+        <p className="text-xs text-slate-500 mt-2 mb-6">Er staan momenteel nog geen studenten in de cloud-database.</p>
+        <button 
+          onClick={() => setShowAddStudentForm(true)} 
+          className="px-4 py-2 bg-indigo-600 text-white font-bold text-xs rounded-lg uppercase tracking-wide cursor-pointer"
+        >
+          ＋ Voeg je eerste student toe
+        </button>
+      </div>
+    </div>
+  );
+}
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans flex flex-col antialiased">
       
