@@ -1,0 +1,6 @@
+{
+  "name": "Student Buitenland Tracker",
+  "description": "Een prototype app voor CIOS om studenten in het buitenland te monitoren, te ondersteunen en noodsignalen te ontvangen met focus op privacy.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
