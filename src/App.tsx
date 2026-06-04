@@ -65,6 +65,7 @@ export default function App() {
   const [students, setStudents] = useState<Student[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [showLoginModal, setShowLoginModal] = useState(true);
+  const [typedEmail, setTypedEmail] = useState('');
 
   // Sync met Supabase Database
   useEffect(() => {
