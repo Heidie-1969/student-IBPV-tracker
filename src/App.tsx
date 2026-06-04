@@ -482,7 +482,7 @@ export default function App() {
   });
 
   const activeStudent = students.find(s => s.id === activeStudentId) || students[0] || null;
-if (currentRole === 'COÖRDINATOR' && students.length === 0) {
+if (currentRole === 'COÖRDINATOR' && students.length === 0 && !showAddStudentForm) { 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-8 text-center">
       <div className="max-w-md w-full bg-white border p-8 rounded-2xl shadow-xl">
