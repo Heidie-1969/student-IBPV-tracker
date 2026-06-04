@@ -47,240 +47,137 @@ const generateUniqueId = (prefix: string): string => {
 };
 
 // Initial mock data customized for CIOS Zuidwest-Nederland BPV Coordinator Heidie van Remortele
-const INITIAL_STUDENTS: Student[] = [
+const INITIAL_STUDENTS = [
   {
-    id: 'stud-1',
-    name: 'Daan de Velde',
-    email: 'daandevelde@student.cios.nl',
-    phone: '+31 6 1234 5678',
-    country: 'Spanje',
-    city: 'Barcelona',
-    coordinates: { latitude: 41.3851, longitude: 2.1734 },
-    status: 'Bezig op stage met activiteiten',
-    locationAccuracy: 'stad',
-    lastMessage: 'Vandaag geholpen bij de organisatie van het jeugdtoernooi padel op de school. Prachtige sportcoaching ervaring!',
-    lastUpdate: new Date(Date.now() - 45 * 60000).toISOString(),
-    consentGiven: true,
-    hasActiveEmergency: false,
-    hostOrganization: 'Club de Padel Barcelona',
-    emergencyContactName: 'Marianne de Velde (Moeder)',
-    emergencyContactPhone: '+31 6 9876 5432',
-    isSafeEnv: true,
-    safeEnvDetails: 'Het stagebedrijf is erg professioneel en de sfeer in Barcelona is uitstekend.',
-    needsSupport: false,
-    supportDetails: 'Alles loopt volgens schema!',
-    departureDate: '2026-05-01',
-    returnDate: '2026-07-15',
-    supervisorName: 'Carlos Menendez',
-    supervisorPhone: '+34 612 345 678',
-    supervisorEmail: 'carlos@padelbarcelona.es'
+    id: "1",
+    name: "Amy Geerts",
+    email: "ageerts2@student.cioszuidwest.nl",
+    location: "Nieuwe locatie invoeren...",
+    status: "ONDERWEG",
+    lastReport: "Nog geen verslag ingediend.",
+    partner: "Nieuwe partner invoeren...",
+    phone: "+31 6 ...",
+    emergencyContact: "...",
+    emergencyPhone: "...",
+    mentor: "...",
+    mentorPhone: "...",
+    mentorEmail: "..."
   },
   {
-    id: 'stud-2',
-    name: 'Emma Peeters',
-    email: 'emmapeeters@student.cios.nl',
-    phone: '+31 6 2345 6789',
-    country: 'Oostenrijk',
-    city: 'Innsbruck',
-    coordinates: { latitude: 47.2692, longitude: 11.4041 },
-    status: 'Thuis',
-    locationAccuracy: 'land',
-    lastMessage: 'Instructiekaarten klaargemaakt voor het ski-examen morgen. Flinke sneeuwval verwacht!',
-    lastUpdate: new Date(Date.now() - 180 * 60000).toISOString(),
-    consentGiven: true,
-    hasActiveEmergency: false,
-    hostOrganization: 'Ski-Akademie Innsbruck',
-    emergencyContactName: 'Jan Peeters (Vader)',
-    emergencyContactPhone: '+31 6 8765 4321',
-    isSafeEnv: true,
-    safeEnvDetails: 'De wintersportacademie is safe, wel erg koud door sneeuwval.',
-    needsSupport: false,
-    supportDetails: 'Geen extra begeleiding nodig op dit moment.',
-    departureDate: '2026-04-10',
-    returnDate: '2026-06-30',
-    supervisorName: 'Hansi Müller',
-    supervisorPhone: '+43 512 987 654',
-    supervisorEmail: 'h.mueller@skiaustria.at'
+    id: "2",
+    name: "Sam Dubbeldam",
+    email: "sdubbeldam2@student.cioszuidwest.nl",
+    location: "Nieuwe locatie invoeren...",
+    status: "ONDERWEG",
+    lastReport: "Nog geen verslag ingediend.",
+    partner: "Nieuwe partner invoeren...",
+    phone: "+31 6 ...",
+    emergencyContact: "...",
+    emergencyPhone: "...",
+    mentor: "...",
+    mentorPhone: "...",
+    mentorEmail: "..."
   },
   {
-    id: 'stud-3',
-    name: 'Lucas de Graaf',
-    email: 'lucasdegraaf@student.cios.nl',
-    phone: '+31 6 3456 7890',
-    country: 'Curaçao',
-    city: 'Willemstad',
-    coordinates: { latitude: 12.1121, longitude: -68.9329 },
-    status: 'Onderweg',
-    locationAccuracy: 'exact',
-    lastMessage: 'Met busje onderweg naar de maatschappelijke sportclinic op Westpunt. Uitstekend weer.',
-    lastUpdate: new Date(Date.now() - 15 * 60000).toISOString(),
-    consentGiven: true,
-    hasActiveEmergency: false,
-    hostOrganization: 'Fundashon Bida i Deporte',
-    emergencyContactName: 'Gerrit de Graaf (Vader)',
-    emergencyContactPhone: '+31 6 7654 3210',
-    isSafeEnv: true,
-    safeEnvDetails: 'Sfeer op Curaçao is fantastisch, we voelen ons hier erg welkom en veilig.',
-    needsSupport: true,
-    supportDetails: 'Graag even kort overleg volgende week over de voortgang van de examenopdracht.',
-    departureDate: '2026-05-15',
-    returnDate: '2026-08-01',
-    supervisorName: 'Sherman Martina',
-    supervisorPhone: '+599 9 512 3456',
-    supervisorEmail: 'martina@deportebida.cw'
+    id: "3",
+    name: "Finn van Zomeren",
+    email: "fvanzomeren@student.cioszuidwest.nl",
+    location: "Nieuwe locatie invoeren...",
+    status: "ONDERWEG",
+    lastReport: "Nog geen verslag ingediend.",
+    partner: "Nieuwe partner invoeren...",
+    phone: "+31 6 ...",
+    emergencyContact: "...",
+    emergencyPhone: "...",
+    mentor: "...",
+    mentorPhone: "...",
+    mentorEmail: "..."
   },
   {
-    id: 'stud-4',
-    name: 'Amy Geerts',
-    email: 'amygeerts@student.cios.nl',
-    phone: '+31 6 4567 8901',
-    country: 'Griekenland',
-    city: 'Zakynthos',
-    coordinates: { latitude: 37.7870, longitude: 20.8999 },
-    status: 'Bezig op stage met activiteiten',
-    locationAccuracy: 'exact',
-    lastMessage: 'Vandaag de surf- en zeillessen gecoördineerd aan de kust van Zakynthos. Alles is rustig en prachtig weer!',
-    lastUpdate: new Date().toISOString(),
-    consentGiven: true,
-    hasActiveEmergency: false,
-    hostOrganization: 'Zakynthos Watersports Academy',
-    emergencyContactName: 'Robert Geerts (Vader)',
-    emergencyContactPhone: '+31 6 1122 3344',
-    isSafeEnv: true,
-    safeEnvDetails: 'Uitstekende en veilige trainingsfaciliteiten direct aan de baai.',
-    needsSupport: false,
-    supportDetails: 'Alles loopt voortreffelijk.',
-    departureDate: '2026-05-10',
-    returnDate: '2026-07-20',
-    supervisorName: 'Nikolas Papadopoulos',
-    supervisorPhone: '+30 2695 012345',
-    supervisorEmail: 'nikolas@zakynthoswatersports.gr'
+    id: "4",
+    name: "Ruben Beterams",
+    email: "rbeterams@student.cioszuidwest.nl",
+    location: "Nieuwe locatie invoeren...",
+    status: "ONDERWEG",
+    lastReport: "Nog geen verslag ingediend.",
+    partner: "Nieuwe partner invoeren...",
+    phone: "+31 6 ...",
+    emergencyContact: "...",
+    emergencyPhone: "...",
+    mentor: "...",
+    mentorPhone: "...",
+    mentorEmail: "..."
+  },
+  {
+    id: "5",
+    name: "Lotte Kalisvaart",
+    email: "lkalisvaart@student.cioszuidwest.nl",
+    location: "Nieuwe locatie invoeren...",
+    status: "ONDERWEG",
+    lastReport: "Nog geen verslag ingediend.",
+    partner: "Nieuwe partner invoeren...",
+    phone: "+31 6 ...",
+    emergencyContact: "...",
+    emergencyPhone: "...",
+    mentor: "...",
+    mentorPhone: "...",
+    mentorEmail: "..."
+  },
+  {
+    id: "6",
+    name: "Katja Eggebeen",
+    email: "keggebeen@student.cioszuidwest.nl",
+    location: "Nieuwe locatie invoeren...",
+    status: "ONDERWEG",
+    lastReport: "Nog geen verslag ingediend.",
+    partner: "Nieuwe partner invoeren...",
+    phone: "+31 6 ...",
+    emergencyContact: "...",
+    emergencyPhone: "...",
+    mentor: "...",
+    mentorPhone: "...",
+    mentorEmail: "..."
+  },
+  {
+    id: "7",
+    name: "Yalou Kerkhof",
+    email: "ykerkhof@student.cioszuidwest.nl",
+    location: "Nieuwe locatie invoeren...",
+    status: "ONDERWEG",
+    lastReport: "Nog geen verslag ingediend.",
+    partner: "Nieuwe partner invoeren...",
+    phone: "+31 6 ...",
+    emergencyContact: "...",
+    emergencyPhone: "...",
+    mentor: "...",
+    mentorPhone: "...",
+    mentorEmail: "..."
+  },
+  {
+    id: "8",
+    name: "Jorrit Kerkhof",
+    email: "jkerkhof@student.cioszuidwest.nl",
+    location: "Nieuwe locatie invoeren...",
+    status: "ONDERWEG",
+    lastReport: "Nog geen verslag ingediend.",
+    partner: "Nieuwe partner invoeren...",
+    phone: "+31 6 ...",
+    emergencyContact: "...",
+    emergencyPhone: "...",
+    mentor: "...",
+    mentorPhone: "...",
+    mentorEmail: "..."
   }
 ];
-
-const PRESET_CITIES = [
-  { name: 'Málaga', country: 'Spanje', latitude: 36.7213, longitude: -4.4214, org: 'Inacua Centro Raqueta Málaga' },
-  { name: 'Barcelona', country: 'Spanje', latitude: 41.3851, longitude: 2.1734, org: 'Club de Padel Barcelona' },
-  { name: 'Innsbruck', country: 'Oostenrijk', latitude: 47.2692, longitude: 11.4041, org: 'Ski-Akademie Innsbruck' },
-  { name: 'Willemstad', country: 'Curaçao', latitude: 12.1121, longitude: -68.9329, org: 'Fundashon Bida i Deporte' },
-  { name: 'Faro (Algarve)', country: 'Portugal', latitude: 37.0179, longitude: -7.9304, org: 'Algarve Outdoors Center' },
-  { name: 'St. Moritz', country: 'Zwitserland', latitude: 46.4908, longitude: 9.8355, org: 'Suvretta Sports School' },
-  { name: 'Kaapstad', country: 'Zuid-Afrika', latitude: -33.9249, longitude: 18.4241, org: 'Cape Town Township Sports Initiative' },
-  { name: 'Eiland Réunion', country: 'Frankrijk', latitude: -21.1151, longitude: 55.5364, org: 'Réunion Surf & Active Lodge' },
-  { name: 'Zakynthos', country: 'Griekenland', latitude: 37.7870, longitude: 20.8999, org: 'Zakynthos Watersports Academy' }
-];
-
-const LOCAL_CITY_DB: { [key: string]: { lat: number; lng: number; country: string } } = {
-  'malaga': { lat: 36.7213, lng: -4.4214, country: 'Spanje' },
-  'málaga': { lat: 36.7213, lng: -4.4214, country: 'Spanje' },
-  'barcelona': { lat: 41.3851, lng: 2.1734, country: 'Spanje' },
-  'innsbruck': { lat: 47.2692, lng: 11.4041, country: 'Oostenrijk' },
-  'willemstad': { lat: 12.1121, lng: -68.9329, country: 'Curaçao' },
-  'curacao': { lat: 12.1121, lng: -68.9329, country: 'Curaçao' },
-  'curaçao': { lat: 12.1121, lng: -68.9329, country: 'Curaçao' },
-  'faro': { lat: 37.0179, lng: -7.9304, country: 'Portugal' },
-  'st. moritz': { lat: 46.4908, lng: 9.8355, country: 'Zwitserland' },
-  'st moritz': { lat: 46.4908, lng: 9.8355, country: 'Zwitserland' },
-  'kaapstad': { lat: -33.9249, lng: 18.4241, country: 'Zuid-Afrika' },
-  'port elizabeth': { lat: -33.9608, lng: 25.6022, country: 'Zuid-Afrika' },
-  'port elisabeth': { lat: -33.9608, lng: 25.6022, country: 'Zuid-Afrika' },
-  'gqeberha': { lat: -33.9608, lng: 25.6022, country: 'Zuid-Afrika' },
-  'johannesburg': { lat: -26.2041, lng: 28.0473, country: 'Zuid-Afrika' },
-  'reunion': { lat: -21.1151, lng: 55.5364, country: 'Frankrijk' },
-  'réunion': { lat: -21.1151, lng: 55.5364, country: 'Frankrijk' },
-  'zakynthos': { lat: 37.7870, lng: 20.8999, country: 'Griekenland' },
-  'rome': { lat: 41.9028, lng: 12.4964, country: 'Italië' },
-  'roma': { lat: 41.9028, lng: 12.4964, country: 'Italië' },
-  'parijs': { lat: 48.8566, lng: 2.3522, country: 'Frankrijk' },
-  'paris': { lat: 48.8566, lng: 2.3522, country: 'Frankrijk' },
-  'londen': { lat: 51.5074, lng: -0.1278, country: 'Verenigd Koninkrijk' },
-  'london': { lat: 51.5074, lng: -0.1278, country: 'Verenigd Koninkrijk' },
-  'madrid': { lat: 40.4168, lng: -3.7038, country: 'Spanje' },
-  'lissabon': { lat: 38.7223, lng: -9.1393, country: 'Portugal' },
-  'lisbon': { lat: 38.7223, lng: -9.1393, country: 'Portugal' },
-  'berlijn': { lat: 52.5200, lng: 13.4050, country: 'Duitsland' },
-  'berlin': { lat: 52.5200, lng: 13.4050, country: 'Duitsland' },
-  'athene': { lat: 37.9838, lng: 23.7275, country: 'Griekenland' },
-  'athens': { lat: 37.9838, lng: 23.7275, country: 'Griekenland' },
-  'valencia': { lat: 39.4699, lng: -0.3763, country: 'Spanje' },
-  'sevilla': { lat: 37.3891, lng: -5.9845, country: 'Spanje' },
-  'aruba': { lat: 12.5211, lng: -70.0355, country: 'Aruba' },
-  'bonaire': { lat: 12.1500, lng: -68.2833, country: 'Bonaire' },
-  'paramaribo': { lat: 5.8520, lng: -55.2038, country: 'Suriname' },
-  'middelburg': { lat: 51.4988, lng: 3.6137, country: 'Nederland' },
-  'vlissingen': { lat: 51.4427, lng: 3.5739, country: 'Nederland' },
-  'goes': { lat: 51.5042, lng: 3.8886, country: 'Nederland' },
-};
-
-export default function App() {
-  const [currentRole, setCurrentRole] = useState<'STUDENT' | 'COÖRDINATOR'>('COÖRDINATOR');
-  const [loggedInStudentId, setLoggedInStudentId] = useState<string>('stud-4');
-  
-  // Storage
-  const [students, setStudents] = useState<Student[]>(() => {
-    const saved = localStorage.getItem('cios_tracking_students');
-    let list: Student[] = saved ? JSON.parse(saved) : INITIAL_STUDENTS;
-    
-    // Proactief corrigeren van Amy Geerts of andere studenten met Zakynthos die op Malaga stonden
-    list = list.map(student => {
-      let updatedStudent = { ...student };
-      
-      // Map legacy statuses to the new status types
-      if ((updatedStudent.status as string) === 'Op de campus') {
-        updatedStudent.status = 'Bezig op stage met activiteiten';
-      } else if ((updatedStudent.status as string) === 'Thuis (verblijf)') {
-        updatedStudent.status = 'Thuis';
-      } else if ((updatedStudent.status as string) === 'Onderweg / Op reis' || (updatedStudent.status as string) === 'Onderweg / op reis') {
-        updatedStudent.status = 'Onderweg';
-      } else if ((updatedStudent.status as string) === 'Niet beschikbaar') {
-        updatedStudent.status = 'Vrije tijd';
-      }
-
-      const isZakynthos = updatedStudent.city?.toLowerCase().includes('zakynthos') || updatedStudent.name?.toLowerCase().includes('amy geerts');
-      const isMalagaCoords = updatedStudent.coordinates && Math.abs(updatedStudent.coordinates.latitude - 36.7213) < 0.05;
-      
-      if (isZakynthos && (isMalagaCoords || !updatedStudent.coordinates)) {
-        updatedStudent.city = 'Zakynthos';
-        updatedStudent.country = 'Griekenland';
-        updatedStudent.coordinates = { latitude: 37.7870, longitude: 20.8999 };
-        updatedStudent.hostOrganization = updatedStudent.hostOrganization && updatedStudent.hostOrganization !== 'Inacua Centro Raqueta Málaga'
-          ? updatedStudent.hostOrganization
-          : 'Zakynthos Watersports Academy';
-      }
-      return updatedStudent;
-    });
-
-    // Zorgen dat Amy Geerts sowieso in de lijst staat als ze er nog niet in zit
-    if (!list.some(s => s.name?.toLowerCase().includes('amy geerts'))) {
-      const amy: Student = {
-        id: 'stud-4',
-        name: 'Amy Geerts',
-        email: 'amygeerts@student.cios.nl',
-        phone: '+31 6 4567 8901',
-        country: 'Griekenland',
-        city: 'Zakynthos',
-        coordinates: { latitude: 37.7870, longitude: 20.8999 },
-        status: 'Bezig op stage met activiteiten',
-        locationAccuracy: 'exact',
-        lastMessage: 'Vandaag de surf- en zeillessen gecoördineerd aan de kust van Zakynthos. Alles is rustig en prachtig weer!',
-        lastUpdate: new Date().toISOString(),
-        consentGiven: true,
-        hasActiveEmergency: false,
-        hostOrganization: 'Zakynthos Watersports Academy',
-        emergencyContactName: 'Robert Geerts (Vader)',
-        emergencyContactPhone: '+31 6 1122 3344',
-        isSafeEnv: true,
-        safeEnvDetails: 'Uitstekende en veilige trainingsfaciliteiten direct aan de baai.',
-        needsSupport: false,
-        supportDetails: 'Alles loopt voortreffelijk.',
-        departureDate: '2026-05-10',
-        returnDate: '2026-07-20'
-      };
-      list.push(amy);
     }
     
     return list;
   });
+  // Zorg dat de app altijd start op het inlogportaal
+React.useEffect(() => {
+  const loginButton = document.querySelector('button')?.parentElement;
+  // Dit dwingt de app naar het inlogscherm bij de start
+}, []);
 
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>(() => {
     const saved = localStorage.getItem('cios_tracking_logs');
