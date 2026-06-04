@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-client';
+import { createClient } from '@supabase/supabase-js';
 
 // Vervang de teksten hieronder door jouw gegevens uit het Supabase-scherm
 const supabaseUrl = 'https://dniwiexpymmndxmtuoih.supabase.co';
