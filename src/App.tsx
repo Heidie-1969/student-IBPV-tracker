@@ -528,7 +528,7 @@ const fetchInitialData = async () => {
       setCoordSearchMessage('');
       setShowAddStudentForm(false);
       
-      fetchInitialData();
+     window.location.href = window.location.pathname + window.location.search; 
     } catch (err) {
       console.error('Fout bij opslaan:', err);
     }
