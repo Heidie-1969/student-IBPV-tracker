@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
 import { 
   MapPin, 
-  Activity, 
+  Activity,
   AlertTriangle, 
   ShieldAlert, 
   ShieldCheck, 
@@ -10,7 +9,7 @@ import {
   SlidersHorizontal, 
   Search, 
   User, 
-  Users,
+  Users, 
   UserPlus,
   Plus,
   Trash2,
@@ -19,7 +18,7 @@ import {
   Phone, 
   Clock, 
   Lock, 
-  X, 
+  X,
   FileDown, 
   Eye, 
   HeartHandshake, 
@@ -30,7 +29,13 @@ import {
   Settings,
   Bell,
   RefreshCw,
-  AlertCircle
+  AlertCircle,
+  TrendingUp,
+  Calendar,
+  Check,
+  ChevronRight,
+  Info
+} from 'lucide-react';
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Student, StudentStatus, LocationAccuracy, AuditLog } from './types';
