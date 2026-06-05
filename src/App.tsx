@@ -382,9 +382,15 @@ export default function App() {
     e.preventDefault();
     if (!newStudentName || !newStudentEmail) return;
 
-    const finalCity = customCity.trim() || 'Málaga';
+const finalCity = customCity.trim() || 'Málaga';
     const finalCountry = customCountry.trim() || 'Spanje';
     const newId = generateUniqueId('stud');
+
+    // Zoek de juiste coördinaten op in de PRESET_CITIES lijst
+    const preset = PRESET_CITIES.find(c => c.name.toLowerCase() === finalCity.toLowerCase());
+    const lat = preset ? preset.latitude : 36.7213;
+    const lng = preset ? preset.longitude : -4.4214;
+    const organization = preset ? preset.org : 'Lokale Sportorganisatie';
 
     await supabase.from('students').insert({
       id: newId,
@@ -393,6 +399,10 @@ export default function App() {
       phone: newStudentPhone,
       country: finalCountry,
       city: finalCity,
+      latitude: lat,
+      longitude: lng,
+      partner_bpv: organization,
+      google_meet_url: `https://meet.google.com/new`,
       status: 'Bezig op stage met activiteiten',
       location_accuracy: isPreciseLocation,
       last_message: 'Dossier handmatig aangemaakt via coördinator dashboard.',
