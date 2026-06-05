@@ -110,7 +110,7 @@ const fetchInitialData = async () => {
     const { data: logs } = await supabase.from('audit_logs').select('*').order('timestamp', { ascending: false }).limit(50);
     
     if (studs) {
-      const dbStudents: Student[] = studs.map((s: any) => ({
+      const formattedStudents: Student[] = studs.map((s: any) => ({
         id: String(s.id),
         name: s.name || 'Onbekende Student',
         email: s.email || '',
@@ -141,80 +141,7 @@ const fetchInitialData = async () => {
         latitude: s.latitude || 36.7213,
         longitude: s.longitude || -4.4214
       }));
-
-      const backupStudents: Student[] = [
-        {
-          id: "backup-bruno",
-          name: "Bruno H.",
-          email: "bruno@student.nl",
-          phone: "+31 6 12345678",
-          country: "Slowakije",
-          city: "Bratislava",
-          status: "Thuis",
-          locationAccuracy: "exact",
-          lastMessage: "Alles oké!",
-          lastUpdate: new Date().toISOString(),
-          consentGiven: true,
-          hasActiveEmergency: false,
-          emergencyMessage: "",
-          hostOrganization: "Bratislava Sports",
-          emergencyContactName: "Ouder",
-          emergencyContactPhone: "+31 6 87654321",
-          isSafeEnv: true,
-          safeEnvDetails: "",
-          needsSupport: false,
-          supportDetails: "",
-          uploadedPhotos: [],
-          departureDate: "",
-          returnDate: "",
-          supervisorName: "H. van Remortele",
-          supervisorPhone: "",
-          supervisorEmail: "",
-          googleMeetUrl: "https://meet.google.com/new",
-          latitude: 48.1486,
-          longitude: 17.1077
-        },
-        {
-          id: "backup-lotte",
-          name: "Lotte Hinesch",
-          email: "lotte@student.nl",
-          phone: "+31 6 11223344",
-          country: "Kenia",
-          city: "Kwale",
-          status: "Thuis",
-          locationAccuracy: "exact",
-          lastMessage: "Goed aangekomen",
-          lastUpdate: new Date().toISOString(),
-          consentGiven: true,
-          hasActiveEmergency: false,
-          emergencyMessage: "",
-          hostOrganization: "Kwale Community Project",
-          emergencyContactName: "Ouders",
-          emergencyContactPhone: "+31 6 44332211",
-          isSafeEnv: true,
-          safeEnvDetails: "",
-          needsSupport: false,
-          supportDetails: "",
-          uploadedPhotos: [],
-          departureDate: "",
-          returnDate: "",
-          supervisorName: "H. van Remortele",
-          supervisorPhone: "",
-          supervisorEmail: "",
-          googleMeetUrl: "https://meet.google.com/new",
-          latitude: -4.1744,
-          longitude: 39.4602
-        }
-      ];
-
-      const combined = [...dbStudents];
-      backupStudents.forEach(b => {
-        if (!combined.some(c => c.name.toLowerCase() === b.name.toLowerCase())) {
-          combined.push(b);
-        }
-      });
-
-      setStudents(combined);
+      setStudents(formattedStudents);
     }
     if (logs) setAuditLogs(logs);
   };
