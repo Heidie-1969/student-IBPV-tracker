@@ -378,19 +378,49 @@ export default function App() {
     });
   };
 
-  const handleAddNewStudent = async (e: React.FormEvent) => {
+const handleAddNewStudent = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newStudentName || !newStudentEmail) return;
+    if (!newStudentName.trim() || !newStudentEmail.trim()) return;
 
-const finalCity = customCity.trim() || 'Málaga';
+    const finalCity = customCity.trim() || 'Málaga';
     const finalCountry = customCountry.trim() || 'Spanje';
     const newId = generateUniqueId('stud');
 
-    // Zoek de juiste coördinaten op in de PRESET_CITIES lijst
-    const preset = PRESET_CITIES.find(c => c.name.toLowerCase() === finalCity.toLowerCase());
+    // Zoek coördinaten op in de PRESET_CITIES lijst
+    const preset = typeof PRESET_CITIES !== 'undefined' ? PRESET_CITIES.find(c => c.name.toLowerCase() === finalCity.toLowerCase()) : null;
     const lat = preset ? preset.latitude : 36.7213;
     const lng = preset ? preset.longitude : -4.4214;
     const organization = preset ? preset.org : 'Lokale Sportorganisatie';
+
+    await supabase.from('students').insert({
+      id: newId,
+      name: newStudentName,
+      email: newStudentEmail,
+      phone: newStudentPhone,
+      country: finalCountry,
+      city: finalCity,
+      latitude: lat,
+      longitude: lng,
+      partner_bpv: organization,
+      google_meet_url: 'https://meet.google.com/new',
+      status: 'Inactief',
+      accuracy: 'High',
+      last_update: new Date().toISOString()
+    });
+      partner_bpv: organization,
+      google_meet_url: 'https://meet.google.com/new',
+
+    await supabase.from('students').insert({
+      id: newId,
+      name: newStudentName,
+      email: newStudentEmail,
+      phone: newStudentPhone,
+      country: finalCountry,
+      city: finalCity,
+      latitude: lat,
+      longitude: lng,
+      partner_bpv: organization,
+      google_meet_url: 'https://meet.google.com/new',
 
     await supabase.from('students').insert({
       id: newId,
