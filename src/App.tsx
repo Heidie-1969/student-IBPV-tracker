@@ -418,17 +418,6 @@ const handleAddNewStudent = async (e: React.FormEvent) => {
     const organization = typeof newStudentHostOrg === 'string' && newStudentHostOrg.trim() ? newStudentHostOrg.trim() : 'Sport Academy';
     const currentPhone = typeof newStudentPhone === 'string' ? newStudentPhone.trim() : '+31 6 ';
     
-    // KOGELVRIJE GEOLOCATIE: We dwingen geldige getallen af zodat Supabase NOOIT weigert
-    let finalLat = 36.7213;
-    let finalLng = -4.4214;
-
-    if (typeof manualLat !== 'undefined' && manualLat && !isNaN(parseFloat(manualLat))) {
-      finalLat = parseFloat(manualLat);
-    }
-    if (typeof manualLng !== 'undefined' && manualLng && !isNaN(parseFloat(manualLng))) {
-      finalLng = parseFloat(manualLng);
-    }
-
     const newId = generateUniqueId('stud');
 
     try {
@@ -439,8 +428,6 @@ const handleAddNewStudent = async (e: React.FormEvent) => {
         phone: currentPhone,
         country: finalCountry,
         city: finalCity,
-        latitude: finalLat,
-        longitude: finalLng,
         host_organization: organization,
         status: 'Thuis',
         consent_given: true,
@@ -467,10 +454,6 @@ const handleAddNewStudent = async (e: React.FormEvent) => {
       if (typeof setCustomCity === 'function') setCustomCity('');
       if (typeof setCustomCountry === 'function') setCustomCountry('');
       if (typeof setNewStudentHostOrg === 'function') setNewStudentHostOrg('');
-      if (typeof setManualLat === 'function') setManualLat('');
-      if (typeof setManualLng === 'function') setManualLng('');
-      if (typeof setShowManualCoords === 'function') setShowManualCoords(false);
-      if (typeof setCoordSearchMessage === 'function') setCoordSearchMessage('');
       if (typeof setShowAddStudentForm === 'function') setShowAddStudentForm(false);
       
       window.location.href = window.location.pathname + window.location.search;
