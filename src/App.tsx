@@ -453,9 +453,9 @@ const fetchInitialData = async () => {
       setManualLng('');
       setShowManualCoords(false);
       setCoordSearchMessage('');
-      setShowAddStudentForm(false);
+setShowAddStudentForm(false);
       
-     window.location.href = window.location.pathname + window.location.search; 
+      window.location.href = window.location.pathname + window.location.search;
     } catch (err) {
       console.error('Fout bij opslaan:', err);
     }
