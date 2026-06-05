@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { 
   MapPin, 
   AlertTriangle, 
-  ShieldAlert, 
+  ShieldAlert,
+  Shieldcheck, 
   RotateCcw, 
   Compass, 
   SlidersHorizontal, 
