@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import { 
   MapPin, 
   Activity,
@@ -35,7 +36,6 @@ import {
   Check,
   ChevronRight,
   Info
-} from 'lucide-react';
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Student, StudentStatus, LocationAccuracy, AuditLog } from './types';
