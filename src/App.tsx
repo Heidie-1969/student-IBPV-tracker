@@ -430,7 +430,7 @@ export default function App() {
         partner_bpv: organization,
         host_organization: organization,
         google_meet_url: 'https://meet.google.com/new',
-        status: 'Inactief',
+        status: 'Thuis',
         consent_given: true,
         location_accuracy: 'exact',
         last_update: new Date().toISOString()
@@ -782,6 +782,7 @@ export default function App() {
                     <input type="text" placeholder="Zoek op naam of locatie..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="text-xs p-1.5 border rounded-lg bg-white w-full sm:w-48 focus:outline-hidden" />
                     <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="text-xs border rounded-lg p-1.5 cursor-pointer bg-white">
                       <option value="ALL">Alle statussen</option>
+                      <option value="Thuis">Thuis</option>
                       <option value="EMERGENCY">🚨 Calamiteiten</option>
                       <option value="Veilig aangekomen">Veilig aangekomen</option>
                       <option value="Bezig op stage met activiteiten">Bezig op stage met activiteiten</option>
