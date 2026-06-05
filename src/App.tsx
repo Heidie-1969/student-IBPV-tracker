@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import { 
   MapPin, 
   Activity,
@@ -40,6 +41,7 @@ import {
   FileText,
   CheckSquare
 } from 'lucide-react';
+
 import { motion, AnimatePresence } from 'framer-motion';
 import { Student, StudentStatus, LocationAccuracy, AuditLog } from './types';
 import { supabase } from './supabaseClient';
