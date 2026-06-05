@@ -81,7 +81,6 @@ export default function App() {
   useEffect(() => {
     fetchInitialData();
 
-    // Luister naar REALTIME database wijzigingen voor pushnotificaties
     const studentSubscription = supabase
       .channel('realtime-monitoring')
       .on('postgres_changes', { event: '*', scheme: 'public', table: 'students' }, (payload) => {
@@ -138,7 +137,9 @@ export default function App() {
         supervisorName: s.supervisor_name,
         supervisorPhone: s.supervisor_phone,
         supervisorEmail: s.supervisor_email,
-        googleMeetUrl: s.google_meet_url
+        googleMeetUrl: s.google_meet_url,
+        latitude: s.latitude,
+        longitude: s.longitude
       }));
       setStudents(formattedStudents);
     }
@@ -153,20 +154,14 @@ export default function App() {
   const [newStudentName, setNewStudentName] = useState('');
   const [newStudentEmail, setNewStudentEmail] = useState('');
   const [newStudentPhone, setNewStudentPhone] = useState('+31 6 ');
-  const [newStudentPresetIdx, setNewStudentPresetIdx] = useState(0);
   const [newStudentHostOrg, setNewStudentHostOrg] = useState('');
   const [customCity, setCustomCity] = useState('');
   const [customCountry, setCustomCountry] = useState('');
-  const [customLat, setCustomLat] = useState('36.7213');
-  const [customLng, setCustomLng] = useState('-4.4214');
+  const [manualLat, setManualLat] = useState('');
+  const [manualLng, setManualLng] = useState('');
+  const [showManualCoords, setShowManualCoords] = useState(false);
   const [isSearchingCoords, setIsSearchingCoords] = useState(false);
   const [coordSearchMessage, setCoordSearchMessage] = useState('');
-  const [isPreciseLocation, setIsPreciseLocation] = useState<LocationAccuracy>('exact');
-  const [newStudentEmergencyName, setNewStudentEmergencyName] = useState('');
-  const [newStudentEmergencyPhone, setNewStudentEmergencyPhone] = useState('+31 6 ');
-  const [newStudentSupervisorName, setNewStudentSupervisorName] = useState('');
-  const [newStudentSupervisorPhone, setNewStudentSupervisorPhone] = useState('+31 6 ');
-  const [newStudentSupervisorEmail, setNewStudentSupervisorEmail] = useState('');
   const [selectedFullImage, setSelectedFullImage] = useState<string | null>(null);
   const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
   const [pushNotifications, setPushNotifications] = useState<any[]>([]);
@@ -206,7 +201,7 @@ export default function App() {
     if (myStudentProfile) {
       setFormStatus(myStudentProfile.status);
       setFormMessage(myStudentProfile.lastMessage || '');
-      setFormAccuracy(myStudentProfile.locationAccuracy);
+      setFormAccuracy(myStudentProfile.locationAccuracy || 'exact');
       setFormConsent(myStudentProfile.consentGiven);
       setFormIsSafeEnv(myStudentProfile.isSafeEnv ?? true);
       setFormSafeEnvDetails(myStudentProfile.safeEnvDetails || '');
@@ -231,6 +226,33 @@ export default function App() {
       setIsEditingContactInfo(false);
     }
   }, [activeStudentId]);
+
+  // Realtime Geocoding op basis van stadstype
+  useEffect(() => {
+    if (!customCity.trim() || showManualCoords) return;
+
+    const delayDebounce = setTimeout(async () => {
+      setIsSearchingCoords(true);
+      setCoordSearchMessage('Realtime coördinaten zoeken...');
+      try {
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(customCity)}&limit=1`);
+        const data = await response.json();
+        if (data && data.length > 0) {
+          setManualLat(data[0].lat);
+          setManualLng(data[0].lon);
+          setCoordSearchMessage(`📍 Coördinaten gevonden! (${parseFloat(data[0].lat).toFixed(4)}, ${parseFloat(data[0].lon).toFixed(4)})`);
+        } else {
+          setCoordSearchMessage('Stad niet live gevonden. Gebruik handmatige invoer.');
+        }
+      } catch (err) {
+        setCoordSearchMessage('Locatieserver offline. Voer handmatig in.');
+      } finally {
+        setIsSearchingCoords(false);
+      }
+    }, 1000);
+
+    return () => clearTimeout(delayDebounce);
+  }, [customCity, showManualCoords]);
 
   const triggerPushNotification = (title: string, body: string, type: 'success' | 'info' | 'warning' = 'success') => {
     const newNotif = {
@@ -277,7 +299,7 @@ export default function App() {
             img.src = reader.result;
             img.onload = () => {
               const canvas = document.createElement('canvas');
-              const MAX_WIDTH = 500; // Iets compacter voor snellere cloud opslag
+              const MAX_WIDTH = 500;
               const MAX_HEIGHT = 500;
               let width = img.width;
               let height = img.height;
@@ -304,6 +326,10 @@ export default function App() {
         reader.readAsDataURL(file);
       });
     }
+  };
+
+  const handleRemoveFormPhoto = (idx: number) => {
+    setFormPhotos(prev => prev.filter((_, i) => i !== idx));
   };
 
   const handleStudentUpdate = async (e: React.FormEvent) => {
@@ -372,13 +398,13 @@ export default function App() {
     await supabase.from('audit_logs').insert({
       id: generateUniqueId('log'),
       actor: 'H. van Remortele (Coördinator)',
-      action: `🚨 Calamiteit opgelost en gesloten`,
+      action: `🚨 Calamiteit opgelost i.s.m. student`,
       target_student: target.name,
       log_type: 'success'
     });
   };
 
-const handleAddNewStudent = async (e: React.FormEvent) => {
+  const handleAddNewStudent = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newStudentName.trim() || !newStudentEmail.trim()) return;
 
@@ -386,11 +412,10 @@ const handleAddNewStudent = async (e: React.FormEvent) => {
     const finalCountry = customCountry.trim() || 'Spanje';
     const newId = generateUniqueId('stud');
 
-    // Als je zelf iets invult gebruikt hij dat, anders zoekt hij in PRESET_CITIES
     const preset = typeof PRESET_CITIES !== 'undefined' ? PRESET_CITIES.find(c => c.name.toLowerCase() === finalCity.toLowerCase()) : null;
     const lat = manualLat ? parseFloat(manualLat) : (preset ? preset.latitude : 37.8617); 
     const lng = manualLng ? parseFloat(manualLng) : (preset ? preset.longitude : 20.7438);
-    const organization = preset ? preset.org : 'Lokale Sportorganisatie';
+    const organization = newStudentHostOrg.trim() || (preset ? preset.org : 'Zakynthos Watersports Academy');
 
     try {
       await supabase.from('students').insert({
@@ -403,31 +428,34 @@ const handleAddNewStudent = async (e: React.FormEvent) => {
         latitude: lat,
         longitude: lng,
         partner_bpv: organization,
+        host_organization: organization,
         google_meet_url: 'https://meet.google.com/new',
         status: 'Inactief',
-        accuracy: 'High',
+        consent_given: true,
+        location_accuracy: 'exact',
         last_update: new Date().toISOString()
+      });
+
+      await supabase.from('audit_logs').insert({
+        id: generateUniqueId('log'),
+        actor: 'H. van Remortele (Coördinator)',
+        action: `Student ${newStudentName.trim()} succesvol aangemaakt op locatie ${finalCity}`,
+        target_student: newStudentName.trim(),
+        log_type: 'success'
       });
 
       setNewStudentName('');
       setNewStudentEmail('');
-      setNewStudentPhone('');
+      setNewStudentPhone('+31 6 ');
       setCustomCity('');
       setCustomCountry('');
+      setNewStudentHostOrg('');
       setManualLat('');
       setManualLng('');
-      
-      if (typeof setShowAddStudentForm === 'function') {
-        setShowAddStudentForm(false);
-      } else if (typeof setIsAddModalOpen === 'function') {
-        setIsAddModalOpen(false);
-      }
-      
-      if (typeof fetchInitialData === 'function') {
-        fetchInitialData();
-      } else {
-        window.location.reload();
-      }
+      setShowManualCoords(false);
+      setCoordSearchMessage('');
+      setShowAddStudentForm(false);
+      fetchInitialData();
     } catch (err) {
       console.error('Fout bij opslaan:', err);
     }
@@ -462,6 +490,7 @@ const handleAddNewStudent = async (e: React.FormEvent) => {
     await supabase.from('students').update({
       phone: editPhone,
       host_organization: editHostOrg,
+      partner_bpv: editHostOrg,
       emergency_contact_name: editEmergencyContactName,
       emergency_contact_phone: editEmergencyContactPhone,
       supervisor_name: editSupervisorName,
@@ -505,30 +534,29 @@ const handleAddNewStudent = async (e: React.FormEvent) => {
   });
 
   const activeStudent = students.find(s => String(s.id) === String(activeStudentId)) || students[0] || null;
+
   if (currentRole === 'COÖRDINATOR' && !activeStudent && students.length > 0) {
-  setActiveStudentId(students[0].id);
-  return <div className="min-h-screen bg-slate-50 flex items-center justify-center text-xs text-slate-500">Dashboard laden...</div>;
-} 
-  if (currentRole === 'COÖRDINATOR' && !activeStudent && students.length > 0) {
-  setActiveStudentId(students[0].id);
-  return <div className="min-h-screen bg-slate-50 flex items-center justify-center text-xs text-slate-500">Dashboard laden...</div>;
-}
-if (currentRole === 'COÖRDINATOR' && students.length === 0 && !showAddStudentForm) { 
-  return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-8 text-center">
-      <div className="max-w-md w-full bg-white border p-8 rounded-2xl shadow-xl">
-        <h2 className="text-lg font-bold text-slate-800">Welkom in het Coördinator Dashboard</h2>
-        <p className="text-xs text-slate-500 mt-2 mb-6">Er staan momenteel nog geen studenten in de cloud-database.</p>
-        <button 
-          onClick={() => setShowAddStudentForm(true)} 
-          className="px-4 py-2 bg-indigo-600 text-white font-bold text-xs rounded-lg uppercase tracking-wide cursor-pointer"
-        >
-          ＋ Voeg je eerste student toe
-        </button>
+    setActiveStudentId(students[0].id);
+    return <div className="min-h-screen bg-slate-50 flex items-center justify-center text-xs text-slate-500">Dashboard laden...</div>;
+  }
+
+  if (currentRole === 'COÖRDINATOR' && students.length === 0 && !showAddStudentForm) { 
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-8 text-center">
+        <div className="max-w-md w-full bg-white border p-8 rounded-2xl shadow-xl">
+          <h2 className="text-lg font-bold text-slate-800">Welkom in het Coördinator Dashboard</h2>
+          <p className="text-xs text-slate-500 mt-2 mb-6">Er staan momenteel nog geen studenten in de cloud-database.</p>
+          <button 
+            onClick={() => setShowAddStudentForm(true)} 
+            className="px-4 py-2 bg-indigo-600 text-white font-bold text-xs rounded-lg uppercase tracking-wide cursor-pointer"
+          >
+            ＋ Voeg je eerste student toe
+          </button>
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans flex flex-col antialiased">
       
@@ -604,7 +632,7 @@ if (currentRole === 'COÖRDINATOR' && students.length === 0 && !showAddStudentFo
                       <div className="bg-rose-950/90 border border-rose-500/50 p-4 rounded-xl flex flex-col gap-2">
                         <span className="text-xs font-bold text-rose-400 animate-pulse flex items-center gap-1">🚨 NOODALARM GEMELD</span>
                         <p className="text-xs italic bg-rose-950 p-2 rounded border border-rose-900">"{myStudentProfile.emergencyMessage}"</p>
-                        <button type="button" onClick={() => resolveEmergency(myStudentProfile.id)} className="w-full py-1.5 bg-white text-rose-950 rounded-lg text-xs font-bold cursor-pointer">Ik ben inmiddels weer veilig</button>
+                        <button type="button" onClick={() => resolveEmergency(myStudentProfile.id)} className="w-full py-1.5 bg-white text-rose-950 rounded-lg text-xs font-bold cursor-pointer">Ik ben inmiddels weer safe</button>
                       </div>
                     ) : (
                       <button type="button" onClick={() => setShowEmergencyModal(true)} className="py-3 px-4 bg-rose-950/40 border border-rose-600/30 rounded-xl flex items-center gap-3 text-left cursor-pointer transition-transform hover:scale-[1.01]">
@@ -667,7 +695,7 @@ if (currentRole === 'COÖRDINATOR' && students.length === 0 && !showAddStudentFo
                           <Camera className="h-4 w-4" /> <span>Kies of maak foto</span>
                           <input type="file" accept="image/*" multiple onChange={handlePhotoUploadChange} className="hidden" />
                         </label>
-                        {isCompressing && <p className="text-[9px] text-indigo-300 animate-pulse font-mono mt-1">Foto's optimaliseren voor cloud opslag...</p>}
+                        {isCompressing && <p className="text-[9px] text-indigo-300 animate-pulse font-mono mt-1">Foto's optimaliseren...</p>}
                         {formPhotos.length > 0 && (
                           <div className="grid grid-cols-3 gap-1 mt-1.5 p-1 bg-slate-900/50 rounded-lg">
                             {formPhotos.map((p, idx) => (
@@ -715,11 +743,32 @@ if (currentRole === 'COÖRDINATOR' && students.length === 0 && !showAddStudentFo
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="flex flex-col gap-1"><label className="text-xs font-semibold text-slate-700">Naam Student</label><input type="text" required placeholder="Bijv. Amy Geerts" value={newStudentName} onChange={(e) => setNewStudentName(e.target.value)} className="text-xs p-2 bg-slate-50 border rounded-lg focus:outline-hidden" /></div>
                         <div className="flex flex-col gap-1"><label className="text-xs font-semibold text-slate-700">CIOS E-mailadres</label><input type="email" required placeholder="ageerts2@student.cioszuidwest.nl" value={newStudentEmail} onChange={(e) => setNewStudentEmail(e.target.value)} className="text-xs p-2 bg-slate-50 border rounded-lg focus:outline-hidden" /></div>
-                        <div className="flex flex-col gap-1"><label className="text-xs font-semibold text-slate-700">Bestemming (Stad)</label><input type="text" placeholder="Zakynthos" value={customCity} onChange={(e) => setCustomCity(e.target.value)} className="text-xs p-2 bg-slate-50 border rounded-lg focus:outline-hidden" /></div>
-                        <div className="flex flex-col gap-1"><label className="text-xs font-semibold text-slate-700">Land</label><input type="text" placeholder="Griekenland" value={customCountry} onChange={(e) => setCustomCountry(e.target.value)} className="text-xs p-2 bg-slate-50 border rounded-lg focus:outline-hidden" /></div>
-                        <div className="flex flex-col gap-1 col-span-1 sm:col-span-2"><label className="text-xs font-semibold text-slate-700">Stagebedrijf / Host-Organisatie</label><input type="text" placeholder="Zakynthos Watersports Academy" value={newStudentHostOrg} onChange={(e) => setNewStudentHostOrg(e.target.value)} className="text-xs p-2 bg-slate-50 border rounded-lg focus:outline-hidden" /></div>
+                        <div className="flex flex-col gap-1"><label className="text-xs font-semibold text-slate-700">Bestemming (Stad)</label><input type="text" required placeholder="Bijv. Zakynthos of Málaga" value={customCity} onChange={(e) => setCustomCity(e.target.value)} className="text-xs p-2 bg-slate-50 border rounded-lg focus:outline-hidden" /></div>
+                        <div className="flex flex-col gap-1"><label className="text-xs font-semibold text-slate-700">Land</label><input type="text" placeholder="Bijv. Griekenland of Spanje" value={customCountry} onChange={(e) => setCustomCountry(e.target.value)} className="text-xs p-2 bg-slate-50 border rounded-lg focus:outline-hidden" /></div>
+                        
+                        <div className="flex flex-col gap-1 col-span-1 sm:col-span-2">
+                          <div className="flex justify-between items-center mb-0.5">
+                            <label className="text-xs font-semibold text-slate-700">Coördinaten & Live Kaart-verificatie</label>
+                            <button type="button" onClick={() => setShowManualCoords(!showManualCoords)} className="text-[10px] text-indigo-600 font-bold underline cursor-pointer">
+                              {showManualCoords ? '⚡ Gebruik automatische zoeker' : '⚙️ Handmatige cijfers invoeren'}
+                            </button>
+                          </div>
+
+                          {showManualCoords ? (
+                            <div className="grid grid-cols-2 gap-2 bg-slate-50 p-2.5 rounded-lg border">
+                              <div className="flex flex-col gap-0.5"><span className="text-[9px] uppercase font-mono text-slate-400">Breedtegraad (Lat)</span><input type="text" placeholder="37.8617" value={manualLat} onChange={(e) => setManualLat(e.target.value)} className="text-xs p-1.5 bg-white border rounded-md" /></div>
+                              <div className="flex flex-col gap-0.5"><span className="text-[9px] uppercase font-mono text-slate-400">Lengtegraad (Lng)</span><input type="text" placeholder="20.7438" value={manualLng} onChange={(e) => setManualLng(e.target.value)} className="text-xs p-1.5 bg-white border rounded-md" /></div>
+                            </div>
+                          ) : (
+                            <div className="text-[11px] font-medium p-2 bg-indigo-50 border border-indigo-100 rounded-lg text-indigo-700 animate-pulse">
+                              {coordSearchMessage || 'Typ een stad hierboven. OpenStreetMap zoekt de coördinaten direct live op!'}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex flex-col gap-1 col-span-1 sm:col-span-2"><label className="text-xs font-semibold text-slate-700">Stagebedrijf / Host-Organisatie</label><input type="text" placeholder="Zakynthos Watersports Academy of Lokale Sportorganisatie" value={newStudentHostOrg} onChange={(e) => setNewStudentHostOrg(e.target.value)} className="text-xs p-2 bg-slate-50 border rounded-lg focus:outline-hidden" /></div>
                       </div>
-                      <button type="submit" className="self-end px-5 py-2 bg-indigo-600 text-white font-bold text-xs rounded-lg uppercase tracking-wider cursor-pointer shadow-md">Opslaan in Cloud ☁️</button>
+                      <button type="submit" disabled={isSearchingCoords} className="self-end px-5 py-2 bg-indigo-600 text-white font-bold text-xs rounded-lg uppercase tracking-wider cursor-pointer shadow-md disabled:bg-slate-300">Opslaan in Cloud ☁️</button>
                     </motion.form>
                   )}
                 </AnimatePresence>
@@ -753,7 +802,7 @@ if (currentRole === 'COÖRDINATOR' && students.length === 0 && !showAddStudentFo
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-xs">
                       {filteredStudents.map((stud) => (
-                        <tr key={stud.id} onClick={() => { setActiveStudentId(stud.id); logDirectAccess(stud.name); }} className={`cursor-pointer transition-colors ${activeStudentId === stud.id ? 'bg-slate-100/80' : 'bg-white hover:bg-slate-50'} ${stud.hasActiveEmergency ? 'bg-rose-50' : ''}`}>
+                        <tr key={stud.id} onClick={() => setActiveStudentId(stud.id)} className={`cursor-pointer transition-colors ${activeStudentId === stud.id ? 'bg-slate-100/80' : 'bg-white hover:bg-slate-50'} ${stud.hasActiveEmergency ? 'bg-rose-50' : ''}`}>
                           <td className="px-5 py-3 font-semibold">
                             <p className="text-slate-900 flex items-center gap-1.5">{stud.name} {stud.hasActiveEmergency && <span className="w-1.5 h-1.5 bg-rose-600 rounded-full animate-ping" />}</p>
                             <span className="text-[10px] text-slate-400 font-normal">{stud.email}</span>
@@ -768,11 +817,11 @@ if (currentRole === 'COÖRDINATOR' && students.length === 0 && !showAddStudentFo
                             </span>
                           </td>
                           <td className="px-5 py-3 text-right">
-                            <p className="italic text-slate-600 truncate max-w-[150px]">"{stud.lastMessage}"</p>
-                            <span className="text-[9px] text-slate-400 font-mono block mt-0.5">{new Date(stud.lastUpdate).toLocaleTimeString('nl-NL')}</span>
+                            <p className="italic text-slate-600 truncate max-w-[150px]">"{stud.lastMessage || 'Geen check-in tekst'}"</p>
+                            <span className="text-[9px] text-slate-400 font-mono block mt-0.5">{stud.lastUpdate ? new Date(stud.lastUpdate).toLocaleTimeString('nl-NL') : 'Niet actief'}</span>
                           </td>
                           <td className="px-5 py-3 text-center">
-                            <button type="button" onClick={(e) => { e.stopPropagation(); handleDeleteStudent(stud); }} className="p-1 text-rose-600 border border-rose-200 bg-rose-50 rounded-md cursor-pointer hover:bg-rose-100"><Trash2 className="h-3.5 w-3.5" /></button>
+                            <button type="button" onClick={(e) => { e.stopPropagation(); setStudentToDelete(stud); }} className="p-1 text-rose-600 border border-rose-200 bg-rose-50 rounded-md cursor-pointer hover:bg-rose-100"><Trash2 className="h-3.5 w-3.5" /></button>
                           </td>
                         </tr>
                       ))}
@@ -789,7 +838,7 @@ if (currentRole === 'COÖRDINATOR' && students.length === 0 && !showAddStudentFo
                     <div key={l.id} className="border-b border-slate-800/40 pb-1 last:border-0 flex justify-between gap-4">
                       <span className="text-slate-600 shrink-0">{new Date(l.timestamp).toLocaleTimeString('nl-NL')}</span>
                       <p className="text-slate-200 flex-1"><strong className="text-emerald-400 font-normal">{l.actor}:</strong> {l.action}</p>
-                      <span className="text-slate-600 truncate max-w-[100px]">ID: {l.target_student}</span>
+                      <span className="text-slate-600 truncate max-w-[100px]">Target: {l.target_student || 'Systeem'}</span>
                     </div>
                   ))}
                 </div>
@@ -798,136 +847,138 @@ if (currentRole === 'COÖRDINATOR' && students.length === 0 && !showAddStudentFo
 
             {/* Right Side Detail Dossier Panel */}
             <div className="lg:col-span-4 flex flex-col gap-6">
-              <div className="bg-white border rounded-xl p-5 shadow-xs flex flex-col gap-4">
-                <div className="border-b pb-3 flex justify-between items-start">
-                  <div>
-                    <span className="text-[9px] text-slate-400 font-bold uppercase font-mono block">Dossier deelnemer</span>
-                    <h3 className="font-bold text-slate-900 text-sm font-display mt-0.5">{activeStudent.name}</h3>
-                  </div>
-                  <button onClick={() => { setLoggedInStudentId(activeStudent.id); setCurrentRole('STUDENT'); }} className="p-1 px-2 bg-slate-900 text-white rounded text-[10px] font-bold cursor-pointer">Simuleer Mobiel 📱</button>
-                </div>
-
-                {activeStudent.hasActiveEmergency && (
-                  <div className="bg-rose-50 border border-rose-300 rounded-xl p-4 flex flex-col gap-2.5">
-                    <span className="text-[10px] font-bold text-rose-700 block">🚨 CALAMITEIT IN BEHANDELING</span>
-                    <p className="text-xs bg-white border border-rose-200 p-2 rounded italic">"{activeStudent.emergencyMessage}"</p>
-                    <button type="button" onClick={() => resolveEmergency(activeStudent.id)} className="w-full py-1.5 bg-emerald-600 text-white font-bold text-xs rounded-lg uppercase cursor-pointer shadow-xs">Alarm Sluiten / Veilig</button>
-                  </div>
-                )}
-
-                {/* Geo Visualization OpenStreetMap box embed */}
-                <div className="flex flex-col gap-1.5">
-                  <span className="text-xs font-bold text-slate-700 uppercase font-mono flex items-center gap-1.5"><Map className="h-4 w-4 text-indigo-600" /> Geo-Verificatie</span>
-                  {activeStudent.consentGiven && activeStudent.status !== 'Onderweg' ? (
-                    <div className="bg-slate-950 border rounded-xl h-60 overflow-hidden relative">
-                      <iframe width="100%" height="100%" title="Map" src={getMapUrl(activeStudent)} className="w-full h-full border-0 absolute" />
+              {activeStudent && (
+                <div className="bg-white border rounded-xl p-5 shadow-xs flex flex-col gap-4">
+                  <div className="border-b pb-3 flex justify-between items-start">
+                    <div>
+                      <span className="text-[9px] text-slate-400 font-bold uppercase font-mono block">Dossier deelnemer</span>
+                      <h3 className="font-bold text-slate-900 text-sm font-display mt-0.5">{activeStudent.name}</h3>
                     </div>
-                  ) : (
-                    <div className="bg-slate-50 border rounded-xl h-40 flex flex-col items-center justify-center text-center p-4 text-slate-400 text-xs">
-                      <Lock className="h-6 w-6 mb-1 text-slate-300" />
-                      <p className="font-semibold text-slate-600">Geen actieve GPS-stream</p>
-                      <p className="text-[10px] mt-0.5">Zodra de student via de mobiel inlogt en een check-in verstuurt, verschijnt de live kaart hier.</p>
+                    <button onClick={() => { setLoggedInStudentId(activeStudent.id); setCurrentRole('STUDENT'); }} className="p-1 px-2 bg-slate-900 text-white rounded text-[10px] font-bold cursor-pointer">Simuleer Mobiel 📱</button>
+                  </div>
+
+                  {activeStudent.hasActiveEmergency && (
+                    <div className="bg-rose-50 border border-rose-300 rounded-xl p-4 flex flex-col gap-2.5">
+                      <span className="text-[10px] font-bold text-rose-700 block">🚨 CALAMITEIT IN BEHANDELING</span>
+                      <p className="text-xs bg-white border border-rose-200 p-2 rounded italic">"{activeStudent.emergencyMessage}"</p>
+                      <button type="button" onClick={() => resolveEmergency(activeStudent.id)} className="w-full py-1.5 bg-emerald-600 text-white font-bold text-xs rounded-lg uppercase cursor-pointer shadow-xs">Alarm Sluiten / Veilig</button>
                     </div>
                   )}
-                </div>
 
-                {/* Contact info metadata grid lists */}
-                <div className="border-t pt-3 flex flex-col gap-2 text-xs">
-                  <div className="flex justify-between items-center">
-                    <span className="font-bold text-slate-800 uppercase font-mono text-[11px]">Contact & Stagegegevens</span>
-                    {!isEditingContactInfo ? (
-                      <button type="button" onClick={() => setIsEditingContactInfo(true)} className="text-[10px] text-indigo-650 font-bold underline cursor-pointer">Aanpassen</button>
+                  {/* Geo Visualization OpenStreetMap box embed */}
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-xs font-bold text-slate-700 uppercase font-mono flex items-center gap-1.5"><Map className="h-4 w-4 text-indigo-600" /> Geo-Verificatie</span>
+                    {activeStudent.consentGiven && activeStudent.status !== 'Onderweg' ? (
+                      <div className="bg-slate-950 border rounded-xl h-60 overflow-hidden relative">
+                        <iframe width="100%" height="100%" title="Map" src={getMapUrl(activeStudent)} className="w-full h-full border-0 absolute" />
+                      </div>
                     ) : (
-                      <div className="flex gap-1.5">
-                        <button type="button" onClick={handleSaveContactInfo} className="bg-emerald-600 text-white p-0.5 px-2 rounded text-[10px] font-bold cursor-pointer">Opslaan</button>
-                        <button type="button" onClick={() => setIsEditingContactInfo(false)} className="bg-slate-100 text-slate-600 p-0.5 px-2 rounded text-[10px] font-bold cursor-pointer">✕</button>
+                      <div className="bg-slate-50 border rounded-xl h-40 flex flex-col items-center justify-center text-center p-4 text-slate-400 text-xs">
+                        <Lock className="h-6 w-6 mb-1 text-slate-300" />
+                        <p className="font-semibold text-slate-600">Geen actieve GPS-stream</p>
+                        <p className="text-[10px] mt-0.5">Zodra de student via de mobiel inlogt en een check-in verstuurt, verschijnt de live kaart hier.</p>
                       </div>
                     )}
                   </div>
 
-                  {!isEditingContactInfo ? (
-                    <div className="space-y-1.5 text-[11px]">
-                      <div className="flex justify-between"><span className="text-slate-400">Partner BPV:</span><span className="font-semibold truncate max-w-[150px] text-right">{activeStudent.hostOrganization}</span></div>
-                      <div className="flex justify-between"><span className="text-slate-400">Mobiel Deelnemer:</span><span className="font-mono text-slate-800">{activeStudent.phone || 'Niet ingevuld'}</span></div>
-                      <div className="flex justify-between"><span className="text-slate-400">Thuisfront Contact:</span><span className="font-semibold text-right">{activeStudent.emergencyContactName || 'Niet ingevuld'}</span></div>
-                      <div className="flex justify-between"><span className="text-slate-400">Noodnummer:</span><span className="font-mono text-slate-800">{activeStudent.emergencyContactPhone || 'Niet ingevuld'}</span></div>
-                      <div className="border-t border-dashed my-1" />
-                      <div className="flex justify-between"><span className="text-indigo-700 font-semibold">Praktijkopleider:</span><span className="font-semibold text-right text-slate-800">{activeStudent.supervisorName || 'Niet ingevuld'}</span></div>
-                      <div className="flex justify-between"><span className="text-slate-400">Tel. Opleider:</span><span className="font-mono text-slate-800">{activeStudent.supervisorPhone || 'Niet ingevuld'}</span></div>
-                    </div>
-                  ) : (
-                    <div className="bg-slate-50 border p-2 rounded-lg flex flex-col gap-1.5 text-[10px]">
-                      <input type="text" placeholder="Stagebedrijf" value={editHostOrg} onChange={(e) => setEditHostOrg(e.target.value)} className="p-1 bg-white border rounded-md focus:outline-hidden" />
-                      <input type="text" placeholder="Telefoon student" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} className="p-1 bg-white border rounded-md focus:outline-hidden font-mono" />
-                      <input type="text" placeholder="Thuisfront naam" value={editEmergencyContactName} onChange={(e) => setEditEmergencyContactName(e.target.value)} className="p-1 bg-white border rounded-md focus:outline-hidden" />
-                      <input type="text" placeholder="Noodnummer" value={editEmergencyContactPhone} onChange={(e) => setEditEmergencyContactPhone(e.target.value)} className="p-1 bg-white border rounded-md focus:outline-hidden font-mono" />
-                      <div className="border-t border-dashed my-0.5" />
-                      <input type="text" placeholder="Naam praktijkopleider" value={editSupervisorName} onChange={(e) => setEditSupervisorName(e.target.value)} className="p-1 bg-white border rounded-md focus:outline-hidden" />
-                      <input type="text" placeholder="Telefoon opleider" value={editSupervisorPhone} onChange={(e) => setEditSupervisorPhone(e.target.value)} className="p-1 bg-white border rounded-md focus:outline-hidden font-mono" />
-                    </div>
-                  )}
-                </div>
-
-                {/* Google Meet Online call workflow component trigger */}
-                <div className="border-t pt-3 flex flex-col gap-2">
-                  <span className="text-xs font-bold text-slate-800 uppercase font-mono flex items-center gap-1.5"><Video className="h-4 w-4 text-indigo-600 animate-pulse" /> Online Voortgangsgesprek</span>
-                  <div className="bg-slate-50 border rounded-xl p-3 text-xs leading-relaxed text-slate-600">
-                    {activeStudent.googleMeetUrl ? (
-                      <div className="flex flex-col gap-2">
-                        <p className="font-semibold text-emerald-700">● Gesprekskanaal staat momenteel live open.</p>
-                        <div className="flex gap-2">
-                          <a href={activeStudent.googleMeetUrl} target="_blank" rel="noopener noreferrer" className="flex-1 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-center font-bold text-xs">Deelnemen</a>
-                          <button type="button" onClick={() => handleStopGoogleMeet(activeStudent.id)} className="px-2.5 py-1 bg-rose-50 text-rose-600 border border-rose-200 rounded font-bold text-xs cursor-pointer">Sluiten</button>
+                  {/* Contact info metadata grid lists */}
+                  <div className="border-t pt-3 flex flex-col gap-2 text-xs">
+                    <div className="flex justify-between items-center">
+                      <span className="font-bold text-slate-800 uppercase font-mono text-[11px]">Contact & Stagegegevens</span>
+                      {!isEditingContactInfo ? (
+                        <button type="button" onClick={() => setIsEditingContactInfo(true)} className="text-[10px] text-indigo-650 font-bold underline cursor-pointer">Aanpassen</button>
+                      ) : (
+                        <div className="flex gap-1.5">
+                          <button type="button" onClick={handleSaveContactInfo} className="bg-emerald-600 text-white p-0.5 px-2 rounded text-[10px] font-bold cursor-pointer">Opslaan</button>
+                          <button type="button" onClick={() => setIsEditingContactInfo(false)} className="bg-slate-100 text-slate-600 p-0.5 px-2 rounded text-[10px] font-bold cursor-pointer">✕</button>
                         </div>
-                      </div>
-                    ) : (
-                      <button type="button" onClick={() => handleStartGoogleMeet(activeStudent.id)} className="w-full py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg uppercase text-xs flex items-center justify-center gap-1 cursor-pointer">🎥 Start Google Meet Gesprek</button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Travel periods input boxes dates */}
-                <div className="border-t pt-3 flex flex-col gap-2">
-                  <span className="text-xs font-bold text-slate-800 uppercase font-mono flex items-center gap-1.5"><Calendar className="h-4 w-4 text-indigo-600" /> Geplande Reisperiode</span>
-                  <div className="bg-slate-50 border rounded-xl p-3 flex flex-col gap-2.5">
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="flex flex-col gap-0.5"><label className="text-[9px] uppercase font-bold text-slate-500 font-mono">Vertrek</label><input type="date" value={dossierDepartureDate} onChange={(e) => setDossierDepartureDate(e.target.value)} className="text-xs p-1 bg-white border rounded cursor-pointer text-slate-800" /></div>
-                      <div className="flex flex-col gap-0.5"><label className="text-[9px] uppercase font-bold text-slate-500 font-mono">Terugkomst</label><input type="date" value={dossierReturnDate} onChange={(e) => setDossierReturnDate(e.target.value)} className="text-xs p-1 bg-white border rounded cursor-pointer text-slate-800" /></div>
+                      )}
                     </div>
-                    <button type="button" onClick={handleSaveTravelDates} className="w-full py-1 bg-indigo-600 text-white text-xs font-bold rounded-lg uppercase tracking-wide cursor-pointer">Periode Opslaan</button>
-                  </div>
-                </div>
 
-                {/* Sfeer en Ondersteuningsbehoeften Intake logs view panel side block */}
-                <div className="border-t pt-3 flex flex-col gap-3 text-xs leading-relaxed">
-                  <span className="font-bold text-slate-800 uppercase font-mono text-[11px] flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-indigo-600" /> Ingestuurde Begeleidingsstatus</span>
-                  <div className={`p-2.5 rounded-xl border italic ${activeStudent.isSafeEnv ?? true ? 'bg-emerald-50/50 border-emerald-100' : 'bg-rose-50 border-rose-100'}`}>
-                    <span className="text-[9.5px] font-bold uppercase not-italic tracking-wider text-slate-400 block mb-0.5">2. Veiligheid & Omgeving:</span>
-                    "{activeStudent.safeEnvDetails || 'Geen toelichting meegestuurd.'}"
-                  </div>
-                  <div className={`p-2.5 rounded-xl border italic ${activeStudent.needsSupport ? 'bg-amber-50 border-amber-100' : 'bg-slate-50'}`}>
-                    <span className="text-[9.5px] font-bold uppercase not-italic tracking-wider text-slate-400 block mb-0.5">3. Extra Ondersteuningsbehoefte:</span>
-                    "{activeStudent.supportDetails || 'Geen behoeften of toelichting meegestuurd.'}"
-                  </div>
-
-                  {/* Real cloud uploaded photos visualization grid carousel */}
-                  <div className="flex flex-col gap-1.5 pt-1 border-t border-dashed">
-                    <span className="text-[10px] font-bold text-slate-700 uppercase font-mono flex items-center gap-1.5"><Camera className="h-4 w-4 text-indigo-600" /> BPV Foto-Dossier (Cloud)</span>
-                    {activeStudent.uploadedPhotos && activeStudent.uploadedPhotos.length > 0 ? (
-                      <div className="grid grid-cols-2 gap-1.5 bg-slate-50 p-2 rounded-xl border">
-                        {activeStudent.uploadedPhotos.map((p, i) => (
-                          <div key={i} className="relative aspect-square border bg-white rounded-lg overflow-hidden shadow-2xs cursor-zoom-in" onClick={() => setSelectedFullImage(p)}>
-                            <img src={p} alt="" className="w-full h-full object-cover" />
-                          </div>
-                        ))}
+                    {!isEditingContactInfo ? (
+                      <div className="space-y-1.5 text-[11px]">
+                        <div className="flex justify-between"><span className="text-slate-400">Partner BPV:</span><span className="font-semibold truncate max-w-[150px] text-right">{activeStudent.hostOrganization}</span></div>
+                        <div className="flex justify-between"><span className="text-slate-400">Mobiel Deelnemer:</span><span className="font-mono text-slate-800">{activeStudent.phone || 'Niet ingevuld'}</span></div>
+                        <div className="flex justify-between"><span className="text-slate-400">Thuisfront Contact:</span><span className="font-semibold text-right">{activeStudent.emergencyContactName || 'Niet ingevuld'}</span></div>
+                        <div className="flex justify-between"><span className="text-slate-400">Noodnummer:</span><span className="font-mono text-slate-800">{activeStudent.emergencyContactPhone || 'Niet ingevuld'}</span></div>
+                        <div className="border-t border-dashed my-1" />
+                        <div className="flex justify-between"><span className="text-indigo-700 font-semibold">Praktijkopleider:</span><span className="font-semibold text-right text-slate-800">{activeStudent.supervisorName || 'Niet ingevuld'}</span></div>
+                        <div className="flex justify-between"><span className="text-slate-400">Tel. Opleider:</span><span className="font-mono text-slate-800">{activeStudent.supervisorPhone || 'Niet ingevuld'}</span></div>
                       </div>
                     ) : (
-                      <p className="text-[11px] text-slate-400 italic text-center p-2 bg-slate-50 rounded-lg border border-dashed">Nog geen foto's geüpload in de cloud.</p>
+                      <div className="bg-slate-50 border p-2 rounded-lg flex flex-col gap-1.5 text-[10px]">
+                        <input type="text" placeholder="Stagebedrijf" value={editHostOrg} onChange={(e) => setEditHostOrg(e.target.value)} className="p-1 bg-white border rounded-md focus:outline-hidden" />
+                        <input type="text" placeholder="Telefoon student" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} className="p-1 bg-white border rounded-md focus:outline-hidden font-mono" />
+                        <input type="text" placeholder="Thuisfront naam" value={editEmergencyContactName} onChange={(e) => setEditEmergencyContactName(e.target.value)} className="p-1 bg-white border rounded-md focus:outline-hidden" />
+                        <input type="text" placeholder="Noodnummer" value={editEmergencyContactPhone} onChange={(e) => setEditEmergencyContactPhone(e.target.value)} className="p-1 bg-white border rounded-md focus:outline-hidden font-mono" />
+                        <div className="border-t border-dashed my-0.5" />
+                        <input type="text" placeholder="Naam praktijkopleider" value={editSupervisorName} onChange={(e) => setEditSupervisorName(e.target.value)} className="p-1 bg-white border rounded-md focus:outline-hidden" />
+                        <input type="text" placeholder="Telefoon opleider" value={editSupervisorPhone} onChange={(e) => setEditSupervisorPhone(e.target.value)} className="p-1 bg-white border rounded-md focus:outline-hidden font-mono" />
+                      </div>
                     )}
                   </div>
-                </div>
 
-              </div>
+                  {/* Google Meet Online call workflow component trigger */}
+                  <div className="border-t pt-3 flex flex-col gap-2">
+                    <span className="text-xs font-bold text-slate-800 uppercase font-mono flex items-center gap-1.5"><Video className="h-4 w-4 text-indigo-600 animate-pulse" /> Online Voortgangsgesprek</span>
+                    <div className="bg-slate-50 border rounded-xl p-3 text-xs leading-relaxed text-slate-600">
+                      {activeStudent.googleMeetUrl ? (
+                        <div className="flex flex-col gap-2">
+                          <p className="font-semibold text-emerald-700">● Gesprekskanaal staat momenteel live open.</p>
+                          <div className="flex gap-2">
+                            <a href={activeStudent.googleMeetUrl} target="_blank" rel="noopener noreferrer" className="flex-1 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-center font-bold text-xs">Deelnemen</a>
+                            <button type="button" onClick={() => handleStopGoogleMeet(activeStudent.id)} className="px-2.5 py-1 bg-rose-50 text-rose-600 border border-rose-200 rounded font-bold text-xs cursor-pointer">Sluiten</button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button type="button" onClick={() => handleStartGoogleMeet(activeStudent.id)} className="w-full py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg uppercase text-xs flex items-center justify-center gap-1 cursor-pointer">🎥 Start Google Meet Gesprek</button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Travel periods input boxes dates */}
+                  <div className="border-t pt-3 flex flex-col gap-2">
+                    <span className="text-xs font-bold text-slate-800 uppercase font-mono flex items-center gap-1.5"><Calendar className="h-4 w-4 text-indigo-600" /> Geplande Reisperiode</span>
+                    <div className="bg-slate-50 border rounded-xl p-3 flex flex-col gap-2.5">
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="flex flex-col gap-0.5"><label className="text-[9px] uppercase font-bold text-slate-500 font-mono">Vertrek</label><input type="date" value={dossierDepartureDate} onChange={(e) => setDossierDepartureDate(e.target.value)} className="text-xs p-1 bg-white border rounded cursor-pointer text-slate-800" /></div>
+                        <div className="flex flex-col gap-0.5"><label className="text-[9px] uppercase font-bold text-slate-500 font-mono">Terugkomst</label><input type="date" value={dossierReturnDate} onChange={(e) => setDossierReturnDate(e.target.value)} className="text-xs p-1 bg-white border rounded cursor-pointer text-slate-800" /></div>
+                      </div>
+                      <button type="button" onClick={handleSaveTravelDates} className="w-full py-1 bg-indigo-600 text-white text-xs font-bold rounded-lg uppercase tracking-wide cursor-pointer">Periode Opslaan</button>
+                    </div>
+                  </div>
+
+                  {/* Sfeer en Ondersteuningsbehoeften Intake logs view panel side block */}
+                  <div className="border-t pt-3 flex flex-col gap-3 text-xs leading-relaxed">
+                    <span className="font-bold text-slate-800 uppercase font-mono text-[11px] flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-indigo-600" /> Ingestuurde Begeleidingsstatus</span>
+                    <div className={`p-2.5 rounded-xl border italic ${activeStudent.isSafeEnv ?? true ? 'bg-emerald-50/50 border-emerald-100' : 'bg-rose-50 border-rose-100'}`}>
+                      <span className="text-[9.5px] font-bold uppercase not-italic tracking-wider text-slate-400 block mb-0.5">2. Veiligheid & Omgeving:</span>
+                      "{activeStudent.safeEnvDetails || 'Geen toelichting meegestuurd.'}"
+                    </div>
+                    <div className={`p-2.5 rounded-xl border italic ${activeStudent.needsSupport ? 'bg-amber-50 border-amber-100' : 'bg-slate-50'}`}>
+                      <span className="text-[9.5px] font-bold uppercase not-italic tracking-wider text-slate-400 block mb-0.5">3. Extra Ondersteuningsbehoefte:</span>
+                      "{activeStudent.supportDetails || 'Geen behoeften of toelichting meegestuurd.'}"
+                    </div>
+
+                    {/* Real cloud uploaded photos visualization grid carousel */}
+                    <div className="flex flex-col gap-1.5 pt-1 border-t border-dashed">
+                      <span className="text-[10px] font-bold text-slate-700 uppercase font-mono flex items-center gap-1.5"><Camera className="h-4 w-4 text-indigo-600" /> BPV Foto-Dossier (Cloud)</span>
+                      {activeStudent.uploadedPhotos && activeStudent.uploadedPhotos.length > 0 ? (
+                        <div className="grid grid-cols-2 gap-1.5 bg-slate-50 p-2 rounded-xl border">
+                          {activeStudent.uploadedPhotos.map((p, i) => (
+                            <div key={i} className="relative aspect-square border bg-white rounded-lg overflow-hidden shadow-2xs cursor-zoom-in" onClick={() => setSelectedFullImage(p)}>
+                              <img src={p} alt="" className="w-full h-full object-cover" />
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-[11px] text-slate-400 italic text-center p-2 bg-slate-50 rounded-lg border border-dashed">Nog geen foto's geüpload.</p>
+                      )}
+                    </div>
+                  </div>
+
+                </div>
+              )}
             </div>
 
           </div>
@@ -1029,4 +1080,4 @@ if (currentRole === 'COÖRDINATOR' && students.length === 0 && !showAddStudentFo
 
     </div>
   );
-} 
+}
