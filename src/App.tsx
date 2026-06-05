@@ -378,7 +378,7 @@ export default function App() {
     });
   };
 
- const handleAddNewStudent = async (e: React.FormEvent) => {
+const handleAddNewStudent = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newStudentName.trim() || !newStudentEmail.trim()) return;
 
@@ -405,32 +405,8 @@ export default function App() {
         google_meet_url: 'https://meet.google.com/new',
         status: 'Inactief',
         accuracy: 'High',
-        last_update: new Date().toISOString(),
-        emergency_contact_name: newStudentEmergencyName || null,
-        emergency_contact_phone: newStudentEmergencyPhone || null,
-        is_safe_env: true,
-        needs_support: false,
-        departure_date: newStudentDepartureDate || null,
-        return_date: newStudentReturnDate || null,
-        supervisor_name: newStudentSupervisorName || null,
-        supervisor_phone: newStudentSupervisorPhone || null,
-        supervisor_email: newStudentSupervisorEmail || null
+        last_update: new Date().toISOString()
       });
-
-      await supabase.from('audit_logs').insert({
-        id: generateUniqueId('log'),
-        actor: 'H. van Remortele (Coördinator)',
-        action: `Student ${newStudentName.trim()} handmatig toegevoegd voor ${finalCity}`,
-        timestamp: new Date().toISOString(),
-        log_type: 'success'
-      });
-
-      if (typeof setIsAddModalOpen === 'function') setIsAddModalOpen(false);
-      window.location.reload();
-    } catch (err) {
-      console.error('Fout bij opslaan:', err);
-    }
-  };
 
       setNewStudentName('');
       setNewStudentEmail('');
@@ -438,20 +414,12 @@ export default function App() {
       setCustomCity('');
       setCustomCountry('');
       if (typeof setIsAddModalOpen === 'function') setIsAddModalOpen(false);
-      
       window.location.reload();
     } catch (err) {
       console.error('Fout bij opslaan:', err);
     }
   };
 
-    await supabase.from('audit_logs').insert({
-      id: generateUniqueId('log'),
-      actor: 'H. van Remortele (Coördinator)',
-      action: `Nieuwe student ${newStudentName} toegevoegd aan cloud monitor`,
-      target_student: newStudentName,
-      log_type: 'info'
-    });
 
     setNewStudentName(''); setNewStudentEmail(''); setShowAddStudentForm(false);
     fetchInitialData();
