@@ -413,7 +413,6 @@ const handleAddNewStudent = async (e: React.FormEvent) => {
     const organization = newStudentHostOrg.trim() || 'Sport Academy';
 
     try {
-      // Voeg de student direct toe aan Supabase
       await supabase.from('students').insert({
         id: newId,
         name: newStudentName.trim(),
@@ -421,15 +420,14 @@ const handleAddNewStudent = async (e: React.FormEvent) => {
         phone: newStudentPhone.trim(),
         country: finalCountry,
         city: finalCity,
-        latitude: manualLat ? parseFloat(manualLat) : 36.7213,
-        longitude: manualLng ? parseFloat(manualLng) : -4.4214,
+        latitude: 36.7213,
+        longitude: -4.4214,
         host_organization: organization,
         status: 'Thuis',
         consent_given: true,
         last_update: new Date().toISOString()
       });
 
-      // Voeg logboekregel toe
       await supabase.from('audit_logs').insert({
         id: generateUniqueId('log'),
         actor: 'H. van Remortele (Coördinator)',
@@ -438,20 +436,14 @@ const handleAddNewStudent = async (e: React.FormEvent) => {
         log_type: 'success'
       });
 
-      // Formulier leegmaken
       setNewStudentName('');
       setNewStudentEmail('');
       setNewStudentPhone('+31 6 ');
       setCustomCity('');
       setCustomCountry('');
       setNewStudentHostOrg('');
-      setManualLat('');
-      setManualLng('');
-      setShowManualCoords(false);
-      setCoordSearchMessage('');
       setShowAddStudentForm(false);
       
-      // Zachte herstart van de pagina zodat de data direct live inlaadt
       window.location.href = window.location.pathname + window.location.search;
     } catch (err) {
       console.error('Fout bij opslaan:', err);
