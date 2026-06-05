@@ -487,7 +487,11 @@ export default function App() {
     return matches && s.status === statusFilter;
   });
 
-  const activeStudent = students.find(s => s.id === activeStudentId) || students[0] || null;
+  const activeStudent = students.find(s => String(s.id) === String(activeStudentId)) || students[0] || null;
+  if (currentRole === 'COÖRDINATOR' && !activeStudent && students.length > 0) {
+  setActiveStudentId(students[0].id);
+  return <div className="min-h-screen bg-slate-50 flex items-center justify-center text-xs text-slate-500">Dashboard laden...</div>;
+}
 if (currentRole === 'COÖRDINATOR' && students.length === 0 && !showAddStudentForm) { 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-8 text-center">
