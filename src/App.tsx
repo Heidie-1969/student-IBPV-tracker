@@ -456,7 +456,7 @@ export default function App() {
       setCoordSearchMessage('');
       setShowAddStudentForm(false);
       
-      window.location.reload();
+      fetchInitialData();
     } catch (err) {
       console.error('Fout bij opslaan:', err);
     }
