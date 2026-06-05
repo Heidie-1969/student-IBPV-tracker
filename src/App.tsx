@@ -386,10 +386,11 @@ const handleAddNewStudent = async (e: React.FormEvent) => {
     const finalCountry = customCountry.trim() || 'Spanje';
     const newId = generateUniqueId('stud');
 
+    // Als je zelf iets invult gebruikt hij dat, anders zoekt hij in PRESET_CITIES
     const preset = typeof PRESET_CITIES !== 'undefined' ? PRESET_CITIES.find(c => c.name.toLowerCase() === finalCity.toLowerCase()) : null;
-    const lat = preset ? preset.latitude : 37.8617; 
-    const lng = preset ? preset.longitude : 20.7438;
-    const organization = preset ? preset.org : 'Zakynthos Watersports Academy';
+    const lat = manualLat ? parseFloat(manualLat) : (preset ? preset.latitude : 37.8617); 
+    const lng = manualLng ? parseFloat(manualLng) : (preset ? preset.longitude : 20.7438);
+    const organization = preset ? preset.org : 'Lokale Sportorganisatie';
 
     try {
       await supabase.from('students').insert({
@@ -413,6 +414,8 @@ const handleAddNewStudent = async (e: React.FormEvent) => {
       setNewStudentPhone('');
       setCustomCity('');
       setCustomCountry('');
+      setManualLat('');
+      setManualLng('');
       
       if (typeof setShowAddStudentForm === 'function') {
         setShowAddStudentForm(false);
