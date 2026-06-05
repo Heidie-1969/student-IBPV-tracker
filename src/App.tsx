@@ -3,7 +3,7 @@ import {
   MapPin, 
   AlertTriangle, 
   ShieldAlert,
-  Shieldcheck, 
+  ShieldCheck, 
   RotateCcw, 
   Compass, 
   SlidersHorizontal, 
