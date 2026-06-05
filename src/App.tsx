@@ -413,16 +413,21 @@ const handleAddNewStudent = async (e: React.FormEvent) => {
       setNewStudentPhone('');
       setCustomCity('');
       setCustomCountry('');
-      if (typeof setIsAddModalOpen === 'function') setIsAddModalOpen(false);
-      window.location.reload();
+      
+      if (typeof setShowAddStudentForm === 'function') {
+        setShowAddStudentForm(false);
+      } else if (typeof setIsAddModalOpen === 'function') {
+        setIsAddModalOpen(false);
+      }
+      
+      if (typeof fetchInitialData === 'function') {
+        fetchInitialData();
+      } else {
+        window.location.reload();
+      }
     } catch (err) {
       console.error('Fout bij opslaan:', err);
     }
-  };
-
-
-    setNewStudentName(''); setNewStudentEmail(''); setShowAddStudentForm(false);
-    fetchInitialData();
   };
 
   const confirmDeleteStudent = async () => {
