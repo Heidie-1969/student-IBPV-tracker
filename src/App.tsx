@@ -405,7 +405,6 @@ const fetchInitialData = async () => {
 
 const handleAddNewStudent = async (e: React.FormEvent) => {
     e.preventDefault();
-    // 1. Strikte controle op de verplichte velden
     const currentName = typeof newStudentName === 'string' ? newStudentName.trim() : '';
     const currentEmail = typeof newStudentEmail === 'string' ? newStudentEmail.trim() : '';
     
@@ -414,28 +413,25 @@ const handleAddNewStudent = async (e: React.FormEvent) => {
       return;
     }
 
-    // 2. Veilige fallback waarden bepalen voor de overige UI velden
     const finalCity = typeof customCity === 'string' && customCity.trim() ? customCity.trim() : 'Málaga';
     const finalCountry = typeof customCountry === 'string' && customCountry.trim() ? customCountry.trim() : 'Spanje';
     const organization = typeof newStudentHostOrg === 'string' && newStudentHostOrg.trim() ? newStudentHostOrg.trim() : 'Sport Academy';
     const currentPhone = typeof newStudentPhone === 'string' ? newStudentPhone.trim() : '+31 6 ';
     
-    // Probeer eventueel aanwezige handmatige coördinaten uit de UI veilig uit te lezen
+    // KOGELVRIJE GEOLOCATIE: We dwingen geldige getallen af zodat Supabase NOOIT weigert
     let finalLat = 36.7213;
     let finalLng = -4.4214;
-    try {
-      if (typeof manualLat !== 'undefined' && manualLat) finalLat = parseFloat(manualLat);
-      if (typeof manualLng !== 'undefined' && manualLng) finalLng = parseFloat(manualLng);
-    } catch (e) {
-      // Indien het parsen mislukt, vallen we veilig terug op de standaardwaarden
-      finalLat = 36.7213;
-      finalLng = -4.4214;
+
+    if (typeof manualLat !== 'undefined' && manualLat && !isNaN(parseFloat(manualLat))) {
+      finalLat = parseFloat(manualLat);
+    }
+    if (typeof manualLng !== 'undefined' && manualLng && !isNaN(parseFloat(manualLng))) {
+      finalLng = parseFloat(manualLng);
     }
 
     const newId = generateUniqueId('stud');
 
     try {
-      // 3. De student direct invoegen in Supabase
       const { error: insertError } = await supabase.from('students').insert({
         id: newId,
         name: currentName,
@@ -457,7 +453,6 @@ const handleAddNewStudent = async (e: React.FormEvent) => {
         return;
       }
 
-      // 4. Logboekregel toevoegen aan de database
       await supabase.from('audit_logs').insert({
         id: generateUniqueId('log'),
         actor: 'H. van Remortele (Coördinator)',
@@ -466,7 +461,6 @@ const handleAddNewStudent = async (e: React.FormEvent) => {
         log_type: 'success'
       });
 
-      // 5. Formulier-states veilig resetten (controleert of de setters bestaan)
       if (typeof setNewStudentName === 'function') setNewStudentName('');
       if (typeof setNewStudentEmail === 'function') setNewStudentEmail('');
       if (typeof setNewStudentPhone === 'function') setNewStudentPhone('+31 6 ');
@@ -479,7 +473,6 @@ const handleAddNewStudent = async (e: React.FormEvent) => {
       if (typeof setCoordSearchMessage === 'function') setCoordSearchMessage('');
       if (typeof setShowAddStudentForm === 'function') setShowAddStudentForm(false);
       
-      // 6. Zachte herstart via URL om de sessie te behouden en de tabel live te vernieuwen
       window.location.href = window.location.pathname + window.location.search;
     } catch (err) {
       console.error('Fout in try-catch bij opslaan:', err);
