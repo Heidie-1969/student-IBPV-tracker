@@ -16,56 +16,30 @@ import {
   FileDown, 
   Eye, 
   HeartHandshake, 
-  HelpCircle,
-  X,
-  Check,
-  Send,
-  AlertCircle,
-  Smartphone,
-  ShieldCheck,
-  Map,
-  Download,
-  Terminal,
-  Activity,
-  FileText,
-  UserPlus,
-  LogIn,
-  LogOut,
-  Plus,
-  Trash2,
-  Calendar,
-  Bell,
-  BellRing,
-  Camera,
-  Video
+  HelpCircle 
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Student, StudentStatus, LocationAccuracy, AuditLog } from './types';
+import { supabase } from './supabaseClient';
+
 const getMapUrl = (student: any): string => {
   if (!student) return "https://www.openstreetmap.org/export/embed.html?bbox=-4.5,36.5,-4.3,36.9&layer=mapnik";
   const lat = student.latitude || 36.7213;
   const lng = student.longitude || -4.4214;
   const delta = 0.01;
   return `https://www.openstreetmap.org/export/embed.html?bbox=${lng - delta},${lat - delta},${lng + delta},${lat + delta}&layer=mapnik&marker=${lat},${lng}`;
-};import { supabase } from './supabaseClient';
+};
 
 const generateUniqueId = (prefix: string): string => {
   return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 10000000)}`;
-  const getMapUrl = (student: any): string => {
-  if (!student) return "https://www.openstreetmap.org/export/embed.html?bbox=-4.5,36.5,-4.3,36.9&layer=mapnik";
-  const lat = student.latitude || 36.7213;
-  const lng = student.longitude || -4.4214;
-  const delta = 0.01;
-  return `https://www.openstreetmap.org/export/embed.html?bbox=${lng - delta},${lat - delta},${lng + delta},${lat + delta}&layer=mapnik&marker=${lat},${lng}`;
 };
-  return `https://www.openstreetmap.org/export/embed.html?bbox=${lng - delta},${lat - delta},${lng + delta},${lat + delta}&layer=mapnik&marker=${lat},${lng}`;
+
 const PRESET_CITIES = [
-  { name: 'Málaga', country: 'Spanje', latitude: 36.7213, longitude: -4.4214, org: 'Inacua Centro Raqueta Málaga' },
-  { name: 'Barcelona', country: 'Spanje', latitude: 41.3851, longitude: 2.1734, org: 'Club de Padel Barcelona' },
-  { name: 'Innsbruck', country: 'Oostenrijk', latitude: 47.2692, longitude: 11.4041, org: 'Ski-Akademie Innsbruck' },
-  { name: 'Willemstad', country: 'Curaçao', latitude: 12.1121, longitude: -68.9329, org: 'Fundashon Bida i Deporte' },
-  { name: 'Faro (Algarve)', country: 'Portugal', latitude: 37.0179, longitude: -7.9304, org: 'Algarve Outdoors Center' },
-  { name: 'St. Moritz', country: 'Zwitserland', latitude: 46.4908, longitude: 9.8355, org: 'Suvretta Sports School' },
+  { name: 'Nairobi', country: 'Kenia', latitude: -1.2921, longitude: 36.8219, org: 'Nairobi Sports Academy' },
+  { name: 'Mombasa', country: 'Kenia', latitude: -4.0435, longitude: 39.6682, org: 'Coast Gymkhana Club' },
+  { name: 'Oles', country: 'Spanje', latitude: 43.5350, longitude: -5.4690, org: 'Asturias Sport Center' },
+  { name: 'Marín', country: 'Spanje', latitude: 42.3881, longitude: -8.7024, org: 'Galicia Surf School' },
+  { name: 'Málaga', country: 'Spanje', latitude: 36.7213, longitude: -4.4214, org: 'Club de Padel Málaga' },
   { name: 'Kaapstad', country: 'Zuid-Afrika', latitude: -33.9249, longitude: 18.4241, org: 'Cape Town Township Sports Initiative' },
   { name: 'Eiland Réunion', country: 'Frankrijk', latitude: -21.1151, longitude: 55.5364, org: 'Réunion Surf & Active Lodge' },
   { name: 'Zakynthos', country: 'Griekenland', latitude: 37.7870, longitude: 20.8999, org: 'Zakynthos Watersports Academy' }
