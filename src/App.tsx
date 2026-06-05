@@ -1,4 +1,3 @@
-import React, { useState, useEffect } from 'react';
 import { 
   MapPin, 
   Activity,
@@ -35,7 +34,11 @@ import {
   Calendar,
   Check,
   ChevronRight,
-  Info
+  Info,
+  Video,
+  Award,
+  FileText,
+  CheckSquare
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Student, StudentStatus, LocationAccuracy, AuditLog } from './types';
