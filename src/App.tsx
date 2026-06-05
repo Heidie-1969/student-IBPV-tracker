@@ -105,41 +105,41 @@ export default function App() {
     };
   }, []);
 
-  const fetchInitialData = async () => {
+ const fetchInitialData = async () => {
     const { data: studs } = await supabase.from('students').select('*').order('name', { ascending: true });
     const { data: logs } = await supabase.from('audit_logs').select('*').order('timestamp', { ascending: false }).limit(50);
     
     if (studs) {
       const formattedStudents: Student[] = studs.map((s: any) => ({
-        id: s.id,
-        name: s.name,
-        email: s.email,
-        phone: s.phone,
-        country: s.country,
-        city: s.city,
-        status: s.status,
-        locationAccuracy: s.location_accuracy,
-        lastMessage: s.last_message,
-        lastUpdate: s.last_update,
-        consentGiven: s.consent_given,
-        hasActiveEmergency: s.has_active_emergency,
-        emergencyMessage: s.emergency_message,
-        hostOrganization: s.host_organization,
-        emergencyContactName: s.emergency_contact_name,
-        emergencyContactPhone: s.emergency_contact_phone,
-        isSafeEnv: s.is_safe_env,
-        safeEnvDetails: s.safe_env_details,
-        needsSupport: s.needs_support,
-        supportDetails: s.support_details,
+        id: String(s.id),
+        name: s.name || 'Onbekende Student',
+        email: s.email || '',
+        phone: s.phone || '',
+        country: s.country || '',
+        city: s.city || '',
+        status: s.status || 'Thuis',
+        locationAccuracy: s.location_accuracy || 'exact',
+        lastMessage: s.last_message || '',
+        lastUpdate: s.last_update || new Date().toISOString(),
+        consentGiven: s.consent_given ?? true,
+        hasActiveEmergency: s.has_active_emergency ?? false,
+        emergencyMessage: s.emergency_message || '',
+        hostOrganization: s.host_organization || s.partner_bpv || '',
+        emergencyContactName: s.emergency_contact_name || '',
+        emergencyContactPhone: s.emergency_contact_phone || '',
+        isSafeEnv: s.is_safe_env ?? true,
+        safeEnvDetails: s.safe_env_details || '',
+        needsSupport: s.needs_support ?? false,
+        supportDetails: s.support_details || '',
         uploadedPhotos: s.uploaded_photos || [],
-        departureDate: s.departure_date,
-        returnDate: s.return_date,
-        supervisorName: s.supervisor_name,
-        supervisorPhone: s.supervisor_phone,
-        supervisorEmail: s.supervisor_email,
-        googleMeetUrl: s.google_meet_url,
-        latitude: s.latitude,
-        longitude: s.longitude
+        departureDate: s.departure_date || '',
+        returnDate: s.return_date || '',
+        supervisorName: s.supervisor_name || '',
+        supervisorPhone: s.supervisor_phone || '',
+        supervisorEmail: s.supervisor_email || '',
+        googleMeetUrl: s.google_meet_url || '',
+        latitude: s.latitude || 36.7213,
+        longitude: s.longitude || -4.4214
       }));
       setStudents(formattedStudents);
     }
