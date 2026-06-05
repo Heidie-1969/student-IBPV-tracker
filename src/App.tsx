@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   MapPin, 
   AlertTriangle, 
-  ShieldAlert,
+  ShieldAlert, 
   ShieldCheck, 
   RotateCcw, 
   Compass, 
@@ -17,7 +17,14 @@ import {
   FileDown, 
   Eye, 
   HeartHandshake, 
-  HelpCircle 
+  HelpCircle,
+  Camera,
+  Map,
+  LogOut,
+  Settings,
+  Bell,
+  RefreshCw,
+  AlertCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Student, StudentStatus, LocationAccuracy, AuditLog } from './types';
