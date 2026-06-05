@@ -14,6 +14,7 @@ import {
   Phone, 
   Clock, 
   Lock, 
+  X, 
   FileDown, 
   Eye, 
   HeartHandshake, 
