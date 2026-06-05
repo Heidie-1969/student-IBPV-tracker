@@ -105,11 +105,11 @@ export default function App() {
     };
   }, []);
 
- const fetchInitialData = async () => {
+const fetchInitialData = async () => {
     const { data: studs } = await supabase.from('students').select('*').order('name', { ascending: true });
     const { data: logs } = await supabase.from('audit_logs').select('*').order('timestamp', { ascending: false }).limit(50);
     
-   if (studs) {
+    if (studs) {
       const dbStudents: Student[] = studs.map((s: any) => ({
         id: String(s.id),
         name: s.name || 'Onbekende Student',
@@ -142,7 +142,6 @@ export default function App() {
         longitude: s.longitude || -4.4214
       }));
 
-      // Harde back-up lijst van de mislukte studenten zodat ze ALTIJD verschijnen
       const backupStudents: Student[] = [
         {
           id: "backup-bruno",
@@ -208,8 +207,6 @@ export default function App() {
         }
       ];
 
-      // Combineer de database studenten met onze back-up studenten
-      // We zorgen dat er geen dubbele namen inkomen
       const combined = [...dbStudents];
       backupStudents.forEach(b => {
         if (!combined.some(c => c.name.toLowerCase() === b.name.toLowerCase())) {
@@ -218,11 +215,9 @@ export default function App() {
       });
 
       setStudents(combined);
-    } 
     }
     if (logs) setAuditLogs(logs);
   };
-
   // UI States & Filters
   const [activeStudentId, setActiveStudentId] = useState<string>('1');
   const [searchQuery, setSearchQuery] = useState('');
