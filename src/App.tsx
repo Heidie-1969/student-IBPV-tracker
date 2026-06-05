@@ -403,20 +403,17 @@ const fetchInitialData = async () => {
     });
   };
 
- const handleAddNewStudent = async (e: React.FormEvent) => {
+const handleAddNewStudent = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newStudentName.trim() || !newStudentEmail.trim()) return;
 
     const finalCity = customCity.trim() || 'Málaga';
     const finalCountry = customCountry.trim() || 'Spanje';
     const newId = generateUniqueId('stud');
-
-    const preset = typeof PRESET_CITIES !== 'undefined' ? PRESET_CITIES.find(c => c.name.toLowerCase() === finalCity.toLowerCase()) : null;
-    const lat = manualLat ? parseFloat(manualLat) : (preset ? preset.latitude : 37.8617); 
-    const lng = manualLng ? parseFloat(manualLng) : (preset ? preset.longitude : 20.7438);
-    const organization = newStudentHostOrg.trim() || (preset ? preset.org : 'Zakynthos Watersports Academy');
+    const organization = newStudentHostOrg.trim() || 'Sport Academy';
 
     try {
+      // Voeg de student direct toe aan Supabase
       await supabase.from('students').insert({
         id: newId,
         name: newStudentName.trim(),
@@ -424,17 +421,15 @@ const fetchInitialData = async () => {
         phone: newStudentPhone.trim(),
         country: finalCountry,
         city: finalCity,
-        latitude: lat,
-        longitude: lng,
-        partner_bpv: organization,
+        latitude: manualLat ? parseFloat(manualLat) : 36.7213,
+        longitude: manualLng ? parseFloat(manualLng) : -4.4214,
         host_organization: organization,
-        google_meet_url: 'https://meet.google.com/new',
         status: 'Thuis',
         consent_given: true,
-        location_accuracy: 'exact',
         last_update: new Date().toISOString()
       });
 
+      // Voeg logboekregel toe
       await supabase.from('audit_logs').insert({
         id: generateUniqueId('log'),
         actor: 'H. van Remortele (Coördinator)',
@@ -443,6 +438,7 @@ const fetchInitialData = async () => {
         log_type: 'success'
       });
 
+      // Formulier leegmaken
       setNewStudentName('');
       setNewStudentEmail('');
       setNewStudentPhone('+31 6 ');
@@ -453,8 +449,9 @@ const fetchInitialData = async () => {
       setManualLng('');
       setShowManualCoords(false);
       setCoordSearchMessage('');
-setShowAddStudentForm(false);
+      setShowAddStudentForm(false);
       
+      // Zachte herstart van de pagina zodat de data direct live inlaadt
       window.location.href = window.location.pathname + window.location.search;
     } catch (err) {
       console.error('Fout bij opslaan:', err);
