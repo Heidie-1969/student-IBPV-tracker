@@ -404,6 +404,7 @@ export default function App() {
     });
   };
 
+```typescript
   const handleAddNewStudent = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newStudentName.trim() || !newStudentEmail.trim()) return;
@@ -416,6 +417,52 @@ export default function App() {
     const lat = manualLat ? parseFloat(manualLat) : (preset ? preset.latitude : 37.8617); 
     const lng = manualLng ? parseFloat(manualLng) : (preset ? preset.longitude : 20.7438);
     const organization = newStudentHostOrg.trim() || (preset ? preset.org : 'Zakynthos Watersports Academy');
+
+    try {
+      await supabase.from('students').insert({
+        id: newId,
+        name: newStudentName.trim(),
+        email: newStudentEmail.trim().toLowerCase(),
+        phone: newStudentPhone.trim(),
+        country: finalCountry,
+        city: finalCity,
+        latitude: lat,
+        longitude: lng,
+        partner_bpv: organization,
+        host_organization: organization,
+        google_meet_url: 'https://meet.google.com/new',
+        status: 'Thuis',
+        consent_given: true,
+        location_accuracy: 'exact',
+        last_update: new Date().toISOString()
+      });
+
+      await supabase.from('audit_logs').insert({
+        id: generateUniqueId('log'),
+        actor: 'H. van Remortele (Coördinator)',
+        action: `Student ${newStudentName.trim()} succesvol aangemaakt op locatie ${finalCity}`,
+        target_student: newStudentName.trim(),
+        log_type: 'success'
+      });
+
+      setNewStudentName('');
+      setNewStudentEmail('');
+      setNewStudentPhone('+31 6 ');
+      setCustomCity('');
+      setCustomCountry('');
+      setNewStudentHostOrg('');
+      setManualLat('');
+      setManualLng('');
+      setShowManualCoords(false);
+      setCoordSearchMessage('');
+      setShowAddStudentForm(false);
+      
+      // Dwing de browser om direct live te verversen
+      window.location.reload();
+    } catch (err) {
+      console.error('Fout bij opslaan:', err);
+    }
+  };
 
     try {
       await supabase.from('students').insert({
