@@ -526,12 +526,12 @@ export default function App() {
     setTypedEmail('');
   };
 
-  const filteredStudents = students.filter(s => {
-    const matches = s.name.toLowerCase().includes(searchQuery.toLowerCase()) || s.city.toLowerCase().includes(searchQuery.toLowerCase());
-    if (statusFilter === 'ALL') return matches;
-    if (statusFilter === 'EMERGENCY') return matches && s.hasActiveEmergency;
-    return matches && s.status === statusFilter;
-  });
+ const filteredStudents = students.filter(s => {
+  const matches = s.name.toLowerCase().includes(searchQuery.toLowerCase()) || s.city.toLowerCase().includes(searchQuery.toLowerCase());
+  if (statusFilter === 'ALL' || statusFilter === '') return matches;
+  if (statusFilter === 'EMERGENCY') return matches && s.hasActiveEmergency;
+  return matches && s.status.toLowerCase() === statusFilter.toLowerCase();
+});
 
   const activeStudent = students.find(s => String(s.id) === String(activeStudentId)) || students[0] || null;
 
