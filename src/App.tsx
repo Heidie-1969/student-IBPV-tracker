@@ -436,15 +436,14 @@ export default function App() {
         location_accuracy: 'exact',
         last_update: new Date().toISOString()
       });
-
-      await supabase.from('audit_logs').insert({
-        id: generateUniqueId('log'),
-        actor: 'H. van Remortele (Coördinator)',
-        action: `Student ${newStudentName.trim()} succesvol aangemaakt op locatie ${finalCity}`,
-        target_student: newStudentName.trim(),
-        log_type: 'success'
-      });
-
+ 
+await supabase.from('audit_logs').insert({
+     id: generateUniqueId('log'),
+     actor: 'H. van Remortele (Coördinator)',
+     action: 'Student succesvol aangemaakt',
+     target_student: newStudentName.trim(),
+     log_type: 'success'
+   });
       setNewStudentName('');
       setNewStudentEmail('');
       setNewStudentPhone('+31 6 ');
