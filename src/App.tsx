@@ -491,6 +491,10 @@ export default function App() {
   if (currentRole === 'COÖRDINATOR' && !activeStudent && students.length > 0) {
   setActiveStudentId(students[0].id);
   return <div className="min-h-screen bg-slate-50 flex items-center justify-center text-xs text-slate-500">Dashboard laden...</div>;
+} 
+  if (currentRole === 'COÖRDINATOR' && !activeStudent && students.length > 0) {
+  setActiveStudentId(students[0].id);
+  return <div className="min-h-screen bg-slate-50 flex items-center justify-center text-xs text-slate-500">Dashboard laden...</div>;
 }
 if (currentRole === 'COÖRDINATOR' && students.length === 0 && !showAddStudentForm) { 
   return (
