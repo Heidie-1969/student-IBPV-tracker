@@ -503,21 +503,36 @@ const handleAddNewStudent = async (e: React.FormEvent) => {
     triggerPushNotification('📅 Reisdata bewaard', `Periode opgeslagen voor ${activeStudent.name}`, 'success');
   };
 
-  const handleSaveContactInfo = async () => {
-    if (!activeStudent) return;
-    await supabase.from('students').update({
-      phone: editPhone,
-      host_organization: editHostOrg,
-      partner_bpv: editHostOrg,
-      emergency_contact_name: editEmergencyContactName,
-      emergency_contact_phone: editEmergencyContactPhone,
-      supervisor_name: editSupervisorName,
-      supervisor_phone: editSupervisorPhone,
-      supervisor_email: editSupervisorEmail
-    }).eq('id', activeStudent.id);
+const handleSaveContactInfo = async () => {
+  if (!activeStudent) return;
+  try {
+    const { error: updateError } = await supabase
+      .from('students')
+      .update({
+        phone: editPhone,
+        host_organization: editHostOrg,
+        partner_organization: editHostOrg, 
+        emergency_contact_name: editEmergencyContactName,
+        emergency_contact_phone: editEmergencyContactPhone,
+        supervisor_name: editSupervisorName,
+        supervisor_phone: editSupervisorPhone,
+        supervisor_email: editSupervisorEmail,
+        last_update: new Date().toISOString()
+      })
+      .eq('id', activeStudent.id);
+
+    if (updateError) {
+      console.error('Supabase updatefout:', updateError);
+      alert('Database weigerde de contactgegevens: ' + updateError.message);
+      return;
+    }
+
     setIsEditingContactInfo(false);
-    fetchInitialData();
-  };
+    window.location.href = window.location.pathname + window.location.search;
+  } catch (err) {
+    console.error('Fout bij opslaan contactinfo:', err);
+  }
+};
 
   const handleStartGoogleMeet = async (studentId: string) => {
     const meetUrl = `https://meet.google.com/aaa-cios-bbb`;
