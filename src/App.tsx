@@ -521,17 +521,16 @@ const handleSaveContactInfo = async () => {
       })
       .eq('id', activeStudent.id);
 
-    if (updateError) {
-      console.error('Supabase updatefout:', updateError);
-      alert('Database weigerde de contactgegevens: ' + updateError.message);
-      return;
-    }
-
+   
+if (updateError) {
+     alert("Supabase Foutmelding:\n" + updateError.message + "\n\nCode: " + updateError.code + "\nDetails: " + updateError.details);
+     return;
+   } 
     setIsEditingContactInfo(false);
     window.location.href = window.location.pathname + window.location.search;
-  } catch (err) {
-    console.error('Fout bij opslaan contactinfo:', err);
-  }
+} catch (err: any) {
+  alert("App Systeemfout bij opslaan:\n" + (err.message || err));
+} 
 };
 
   const handleStartGoogleMeet = async (studentId: string) => {
