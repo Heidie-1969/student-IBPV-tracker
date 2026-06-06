@@ -591,7 +591,7 @@ const handleAddNewStudent = async (e: React.FormEvent) => {
               <p className="text-[11px] text-slate-300 mt-1 leading-relaxed whitespace-pre-line">{notif.body}</p>
             </motion.div>
           ))}
-        </AnimatePresence>
+        </AnimatePresence> 
       </div>
 
       {/* Header */}
