@@ -441,10 +441,11 @@ const handleAddNewStudent = async (e: React.FormEvent) => {
         city: finalCity,
         latitude: finalLat,
         longitude: finalLng,
-        host_organization: organization,
+       host_organization: organization,
         status: 'Thuis',
+        google_meet_url: 'https://meet.google.com/chv-yduc-skx',
         consent_given: true,
-        last_update: new Date().toISOString()
+        last_update: new Date().toISOString() 
       });
 
       if (insertError) {
