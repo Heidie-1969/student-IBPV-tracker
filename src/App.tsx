@@ -510,8 +510,7 @@ const handleSaveContactInfo = async () => {
       .from('students')
       .update({
         phone: editPhone,
-        host_organization: editHostOrg,
-        partner_organization: editHostOrg, 
+        host_organization: editHostOrg, 
         emergency_contact_name: editEmergencyContactName,
         emergency_contact_phone: editEmergencyContactPhone,
         supervisor_name: editSupervisorName,
@@ -520,6 +519,18 @@ const handleSaveContactInfo = async () => {
         last_update: new Date().toISOString()
       })
       .eq('id', activeStudent.id);
+
+    if (updateError) {
+      alert("Supabase Foutmelding:\n" + updateError.message);
+      return;
+    }
+
+    setIsEditingContactInfo(false);
+    window.location.href = window.location.pathname + window.location.search;
+  } catch (err: any) {
+    alert("Systeemfout bij opslaan:\n" + err.message);
+  }
+};
 
    
 if (updateError) {
