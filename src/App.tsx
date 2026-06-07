@@ -973,7 +973,7 @@ const handleSaveContactInfo = async () => {
                               .from('students')
                               .update({ google_meet_url: nieuweLink.trim() })
                               .eq('id', activeStudent.id)
-                              .then(() => window.location.reload());
+                              .then(() => { window.location.href = window.location.pathname + window.location.search; });
                           }
                         }}
                         className="bg-slate-200 hover:bg-slate-300 text-slate-700 px-2.5 py-1.5 rounded-lg transition-colors"
@@ -994,7 +994,7 @@ const handleSaveContactInfo = async () => {
                             .from('students')
                             .update({ google_meet_url: nieuweLink.trim() })
                             .eq('id', activeStudent.id)
-                            .then(() => window.location.reload());
+                            .then(() => { window.location.href = window.location.pathname + window.location.search; });
                         }
                       }}
                       className="w-full text-center bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-1.5 px-3 rounded-lg transition-colors mt-1"
