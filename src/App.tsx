@@ -1005,6 +1005,29 @@ const handleSaveContactInfo = async () => {
                 )}
               </div>
             </div>
+
+            {/* NIEUW: Chatbox / Communicatiehistorie */}
+            <div className="border-t pt-3 flex flex-col gap-2 mt-2">
+              <span className="text-xs font-bold text-slate-800 uppercase font-mono flex items-center gap-1.5">💬 Chatbox / Contacthistorie</span>
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-600 mt-1">
+                <textarea
+                  className="w-full bg-white border border-slate-300 rounded-lg px-2 py-1.5 text-xs text-slate-800 h-20 resize-none focus:outline-none focus:border-indigo-500"
+                  defaultValue={activeStudent.notes || ''}
+                  blurOnSubmit={true}
+                  placeholder="Typ hier updates, afspraken of logboeknotities voor deze student..."
+                  onBlur={(e) => {
+                    const tekst = e.target.value.trim();
+                    if (tekst !== (activeStudent.notes || '')) {
+                      supabase
+                        .from('students')
+                        .update({ notes: tekst })
+                        .eq('id', activeStudent.id);
+                    }
+                  }}
+                />
+                <p className="text-[10px] text-slate-400 mt-1 italic">Klik buiten het tekstvak om je notities automatisch op te slaan.</p>
+              </div>
+            </div> 
                   {/* Travel periods input boxes dates */}
                   <div className="border-t pt-3 flex flex-col gap-2">
                     <span className="text-xs font-bold text-slate-800 uppercase font-mono flex items-center gap-1.5"><Calendar className="h-4 w-4 text-indigo-600" /> Geplande Reisperiode</span>
