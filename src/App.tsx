@@ -510,7 +510,7 @@ const handleSaveContactInfo = async () => {
       .from('students')
       .update({
         phone: editPhone,
-        host_organization: editHostOrg, 
+        host_organization: editHostOrg,
         emergency_contact_name: editEmergencyContactName,
         emergency_contact_phone: editEmergencyContactPhone,
         supervisor_name: editSupervisorName,
@@ -528,22 +528,9 @@ const handleSaveContactInfo = async () => {
     setIsEditingContactInfo(false);
     window.location.href = window.location.pathname + window.location.search;
   } catch (err: any) {
-    alert("Systeemfout bij opslaan:\n" + err.message);
+    alert("Systeemfout bij opslaan:\n" + (err.message || err));
   }
 };
-
-   
-if (updateError) {
-     alert("Supabase Foutmelding:\n" + updateError.message + "\n\nCode: " + updateError.code + "\nDetails: " + updateError.details);
-     return;
-   } 
-    setIsEditingContactInfo(false);
-    window.location.href = window.location.pathname + window.location.search;
-} catch (err: any) {
-  alert("App Systeemfout bij opslaan:\n" + (err.message || err));
-} 
-};
-
   const handleStartGoogleMeet = async (studentId: string) => {
     const meetUrl = `https://meet.google.com/aaa-cios-bbb`;
     await supabase.from('students').update({ google_meet_url: meetUrl }).eq('id', studentId);
