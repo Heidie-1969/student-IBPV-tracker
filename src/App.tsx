@@ -1007,21 +1007,17 @@ const handleSaveContactInfo = async () => {
 
               {/* 2. Realtime Chatbox Sectie */}
               <div>
-             {/* 2. Realtime Chatbox Sectie */}
-              <div>
                 <span className="text-xs font-bold text-slate-800 uppercase font-mono flex items-center gap-1.5">💬 Realtime Chatbox (Deelnemer & Docent)</span>
                 <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs mt-1 flex flex-col gap-3">
                   
                   {/* Berichtenlijst */}
-                  <div className="h-40 overflow-y-auto bg-white border border-slate-200 rounded-lg p-2 flex flex-col gap-2" id="chatMessageList">
-                    {/* Logboekhistorie als fallback */}
+                  <div className="h-40 overflow-y-auto bg-white border border-slate-200 rounded-lg p-2 flex flex-col gap-2">
                     {activeStudent.notes && (
                       <div className="bg-slate-100 p-2 rounded text-slate-600 text-[11px]">
                         <span className="font-bold block text-[9px] text-slate-500">Laatst opgeslagen update / logboek:</span>
                         {activeStudent.notes}
                       </div>
                     )}
-                    
                     <p className="text-[10px] text-slate-400 italic text-center mt-2">Berichtenhistorie gesynchroniseerd met database.</p>
                   </div>
 
@@ -1068,52 +1064,7 @@ const handleSaveContactInfo = async () => {
                 </div>
               </div>
 
-                  {/* Invoerveld */}
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      id="chatInputMessage"
-                      placeholder="Typ een bericht naar de student..."
-                      className="flex-1 bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-indigo-500"
-                      onKeyDown={async (e) => {
-                        if (e.key === 'Enter') {
-                          const txt = e.currentTarget.value.trim();
-                          if (!txt) return;
-                          
-                          await supabase.from('messages').insert({
-                            student_id: activeStudent.id,
-                            sender: 'teacher',
-                            message: txt
-                          });
-                          
-                          await supabase.from('students').update({ notes: txt }).eq('id', activeStudent.id);
-                          
-                          e.currentTarget.value = '';
-                          alert("Bericht opgeslagen!");
-                          window.location.reload();
-                        }
-                      }}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const el = document.getElementById('chatInputMessage') as HTMLInputElement;
-                        if (el) {
-                          const e = new KeyboardEvent('keydown', { key: 'Enter' });
-                          el.dispatchEvent(e);
-                        }
-                      }}
-                      className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg font-medium"
-                    >
-                      Stuur
-                    </button>
-                  </div>
-                  <p className="text-[10px] text-slate-400 italic">Druk op Enter of klik op Stuur om het bericht direct te loggen.</p>
-                </div>
-              </div>
-
-            </div>
-                  {/* Travel periods input boxes dates */}
+            </div> 
                   <div className="border-t pt-3 flex flex-col gap-2">
                     <span className="text-xs font-bold text-slate-800 uppercase font-mono flex items-center gap-1.5"><Calendar className="h-4 w-4 text-indigo-600" /> Geplande Reisperiode</span>
                     <div className="bg-slate-50 border rounded-xl p-3 flex flex-col gap-2.5">
