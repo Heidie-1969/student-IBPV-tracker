@@ -91,7 +91,43 @@ export default function App() {
             triggerPushNotification(`🚨 NOODOPROEP: ${updatedStudent.name}`, `${updatedStudent.emergency_message || 'Dringend contact gewenst!'}`, 'warning');
           } else {
             triggerPushNotification(`🔄 Update van ${updatedStudent.name}`, `Status gewijzigd naar: ${updatedStudent.status}`, 'success');
-          }
+          } 
+         // Realtime Chatberichten ophalen op basis van activeStudentId
+  useEffect(() => {
+    if (!activeStudentId) {
+      setChatMessages([]);
+      return;
+    }
+
+    const fetchChatMessages = async () => {
+      const { data, error } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('student_id', activeStudentId)
+        .order('created_at', { ascending: true });
+      
+      if (!error && data) {
+        setChatMessages(data);
+      }
+    };
+
+    fetchChatMessages();
+
+    const channel = supabase
+      .channel('realtime-chat')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'messages', filter: `student_id=eq.${activeStudentId}` },
+        (payload) => {
+          setChatMessages((prev) => [...prev, payload.new]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [activeStudentId]); 
         }
       })
       .on('postgres_changes', { event: 'INSERT', scheme: 'public', table: 'audit_logs' }, (payload) => {
@@ -147,6 +183,7 @@ const fetchInitialData = async () => {
   };
   // UI States & Filters
   const [activeStudentId, setActiveStudentId] = useState<string>('1');
+  const [chatMessages, setChatMessages] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [showAddStudentForm, setShowAddStudentForm] = useState(false);
@@ -1005,20 +1042,32 @@ const handleSaveContactInfo = async () => {
                 </div>
               </div>
 
-              {/* 2. Realtime Chatbox Sectie */}
+            {/* 2. Realtime Chatbox Sectie */}
               <div>
                 <span className="text-xs font-bold text-slate-800 uppercase font-mono flex items-center gap-1.5">💬 Realtime Chatbox (Deelnemer & Docent)</span>
                 <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs mt-1 flex flex-col gap-3">
                   
                   {/* Berichtenlijst */}
-                  <div className="h-40 overflow-y-auto bg-white border border-slate-200 rounded-lg p-2 flex flex-col gap-2">
-                    {activeStudent.notes && (
-                      <div className="bg-slate-100 p-2 rounded text-slate-600 text-[11px]">
-                        <span className="font-bold block text-[9px] text-slate-500">Laatst opgeslagen update / logboek:</span>
-                        {activeStudent.notes}
-                      </div>
+                  <div className="h-48 overflow-y-auto bg-white border border-slate-200 rounded-lg p-3 flex flex-col gap-2" id="chatMessageList">
+                    {chatMessages.length === 0 ? (
+                      <p className="text-[11px] text-slate-400 italic text-center py-6">Nog geen chatberichten. Typ hieronder een bericht om de chat te starten.</p>
+                    ) : (
+                      chatMessages.map((msg) => (
+                        <div 
+                          key={msg.id} 
+                          className={`p-2 rounded-xl max-w-[85%] text-xs leading-tight ${
+                            msg.sender === 'teacher' 
+                              ? 'bg-indigo-600 text-white self-end rounded-br-none' 
+                              : 'bg-slate-100 text-slate-800 self-start rounded-bl-none'
+                          }`}
+                        >
+                          <span className="font-bold block text-[9px] opacity-75 mb-0.5">
+                            {msg.sender === 'teacher' ? 'Docent' : 'Student'}
+                          </span>
+                          {msg.message}
+                        </div>
+                      ))
                     )}
-                    <p className="text-[10px] text-slate-400 italic text-center mt-2">Berichtenhistorie gesynchroniseerd met database.</p>
                   </div>
 
                   {/* Invoerveld */}
@@ -1033,16 +1082,13 @@ const handleSaveContactInfo = async () => {
                           const txt = e.currentTarget.value.trim();
                           if (!txt) return;
                           
+                          e.currentTarget.value = '';
+                          
                           await supabase.from('messages').insert({
-                            student_id: activeStudent.id,
+                            student_id: activeStudentId,
                             sender: 'teacher',
                             message: txt
                           });
-                          
-                          await supabase.from('students').update({ notes: txt }).eq('id', activeStudent.id);
-                          
-                          e.currentTarget.value = '';
-                          window.location.href = window.location.pathname + window.location.search;
                         }
                       }}
                     />
@@ -1060,7 +1106,6 @@ const handleSaveContactInfo = async () => {
                       Stuur
                     </button>
                   </div>
-                  <p className="text-[10px] text-slate-400 italic">Druk op Enter of klik op Stuur om het bericht direct te loggen.</p>
                 </div>
               </div>
 
