@@ -948,86 +948,126 @@ const handleSaveContactInfo = async () => {
                       </div>
                     )} 
                   </div>
-{/* Online call workflow component trigger */}
-            <div className="border-t pt-3 flex flex-col gap-2">
-              <span className="text-xs font-bold text-slate-800 uppercase font-mono flex items-center gap-1.5">💻 Online voortgangsgesprek</span>
-              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs leading-relaxed text-slate-600 mt-1">
-                {activeStudent.google_meet_url && activeStudent.google_meet_url.trim() !== '' ? (
-                  <div className="flex flex-col gap-2">
-                    <p className="font-semibold text-emerald-700">● Gesprekskanaal staat momenteel live open.</p>
-                    <div className="flex gap-2">
-                      <a 
-                        href={activeStudent.google_meet_url} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="flex-1 text-center bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-1.5 px-3 rounded-lg transition-colors"
-                      >
-                        Deelnemen
-                      </a>
+{/* Online call workflow & Realtime Chatbox Component */}
+            <div className="border-t pt-4 flex flex-col gap-4">
+              
+              {/* 1. Videobel Sectie */}
+              <div>
+                <span className="text-xs font-bold text-slate-800 uppercase font-mono flex items-center gap-1.5">💻 Online voortgangsgesprek</span>
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs leading-relaxed text-slate-600 mt-1">
+                  {activeStudent.google_meet_url && activeStudent.google_meet_url.trim() !== '' ? (
+                    <div className="flex flex-col gap-2">
+                      <p className="font-semibold text-emerald-700">● Gesprekskanaal staat momenteel live open.</p>
+                      <div className="flex gap-2">
+                        <a 
+                          href={activeStudent.google_meet_url} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="flex-1 text-center bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-1.5 px-3 rounded-lg transition-colors"
+                        >
+                          Deelnemen
+                        </a>
+                        <button 
+                          type="button" 
+                          onClick={async () => {
+                            const nw = prompt("Pas de link aan:", activeStudent.google_meet_url);
+                            if (nw !== null) {
+                              await supabase.from('students').update({ google_meet_url: nw.trim() }).eq('id', activeStudent.id);
+                              activeStudent.google_meet_url = nw.trim();
+                              setActiveStudent({...activeStudent});
+                            }
+                          }}
+                          className="bg-slate-200 hover:bg-slate-300 text-slate-700 px-2.5 py-1.5 rounded-lg transition-colors"
+                        >
+                          Aanpassen
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-2">
+                      <p className="text-slate-500 italic">Nog geen actieve videobel-link ingesteld voor deze student.</p>
                       <button 
                         type="button" 
-                        onClick={() => {
-                          const nieuweLink = prompt("Pas de Teams of Google Meet link aan:", activeStudent.google_meet_url);
-                          if (nieuweLink !== null) {
-                            supabase
-                              .from('students')
-                              .update({ google_meet_url: nieuweLink.trim() })
-                              .eq('id', activeStudent.id)
-                              .then(() => { window.location.href = window.location.pathname + window.location.search; });
+                        onClick={async () => {
+                          const nw = prompt("Voer een Google Meet of Teams link in:");
+                          if (nw) {
+                            await supabase.from('students').update({ google_meet_url: nw.trim() }).eq('id', activeStudent.id);
+                            activeStudent.google_meet_url = nw.trim();
+                            setActiveStudent({...activeStudent});
                           }
                         }}
-                        className="bg-slate-200 hover:bg-slate-300 text-slate-700 px-2.5 py-1.5 rounded-lg transition-colors"
+                        className="w-full text-center bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-1.5 px-3 rounded-lg transition-colors"
                       >
-                        Aanpassen
+                        + Link instellen
                       </button>
                     </div>
+                  )}
+                </div>
+              </div>
+
+              {/* 2. Realtime Chatbox Sectie */}
+              <div>
+                <span className="text-xs font-bold text-slate-800 uppercase font-mono flex items-center gap-1.5">💬 Realtime Chatbox (Deelnemer & Docent)</span>
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs mt-1 flex flex-col gap-3">
+                  
+                  {/* Berichtenlijst */}
+                  <div className="h-40 overflow-y-auto bg-white border border-slate-200 rounded-lg p-2 flex flex-col gap-2">
+                    <div className="text-[11px] text-slate-400 italic text-center py-4">
+                      Chatverbinding met database actief...
+                    </div>
+                    {activeStudent.notes && (
+                      <div className="bg-indigo-50 border border-indigo-100 p-2 rounded-lg text-slate-700">
+                        <span className="font-bold text-indigo-900 block text-[10px] uppercase">Laatst opgeslagen update / logboek:</span>
+                        {activeStudent.notes}
+                      </div>
+                    )}
                   </div>
-                ) : (
-                  <div className="flex flex-col gap-2">
-                    <p className="text-slate-500 italic">Nog geen actieve videobel-link ingesteld voor deze student.</p>
-                    <button 
-                      type="button" 
-                      onClick={() => {
-                        const nieuweLink = prompt("Voer een Google Meet of Microsoft Teams link in voor deze student:");
-                        if (nieuweLink) {
-                          supabase
-                            .from('students')
-                            .update({ google_meet_url: nieuweLink.trim() })
-                            .eq('id', activeStudent.id)
-                            .then(() => { window.location.href = window.location.pathname + window.location.search; });
+
+                  {/* Invoerveld */}
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      id="chatInputMessage"
+                      placeholder="Typ een bericht naar de student..."
+                      className="flex-1 bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-indigo-500"
+                      onKeyDown={async (e) => {
+                        if (e.key === 'Enter') {
+                          const txt = e.currentTarget.value.trim();
+                          if (!txt) return;
+                          
+                          await supabase.from('messages').insert({
+                            student_id: activeStudent.id,
+                            sender: 'teacher',
+                            message: txt
+                          });
+                          
+                          await supabase.from('students').update({ notes: txt }).eq('id', activeStudent.id);
+                          
+                          e.currentTarget.value = '';
+                          alert("Bericht opgeslagen!");
+                          window.location.reload();
                         }
                       }}
-                      className="w-full text-center bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-1.5 px-3 rounded-lg transition-colors mt-1"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const el = document.getElementById('chatInputMessage') as HTMLInputElement;
+                        if (el) {
+                          const e = new KeyboardEvent('keydown', { key: 'Enter' });
+                          el.dispatchEvent(e);
+                        }
+                      }}
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg font-medium"
                     >
-                      + Link instellen
+                      Stuur
                     </button>
                   </div>
-                )}
+                  <p className="text-[10px] text-slate-400 italic">Druk op Enter of klik op Stuur om het bericht direct te loggen.</p>
+                </div>
               </div>
-            </div>
 
-            {/* NIEUW: Chatbox / Communicatiehistorie */}
-            <div className="border-t pt-3 flex flex-col gap-2 mt-2">
-              <span className="text-xs font-bold text-slate-800 uppercase font-mono flex items-center gap-1.5">💬 Chatbox / Contacthistorie</span>
-              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-600 mt-1">
-                <textarea
-                  className="w-full bg-white border border-slate-300 rounded-lg px-2 py-1.5 text-xs text-slate-800 h-20 resize-none focus:outline-none focus:border-indigo-500"
-                  defaultValue={activeStudent.notes || ''}
-                  blurOnSubmit={true}
-                  placeholder="Typ hier updates, afspraken of logboeknotities voor deze student..."
-                  onBlur={(e) => {
-                    const tekst = e.target.value.trim();
-                    if (tekst !== (activeStudent.notes || '')) {
-                      supabase
-                        .from('students')
-                        .update({ notes: tekst })
-                        .eq('id', activeStudent.id);
-                    }
-                  }}
-                />
-                <p className="text-[10px] text-slate-400 mt-1 italic">Klik buiten het tekstvak om je notities automatisch op te slaan.</p>
-              </div>
-            </div> 
+            </div>
                   {/* Travel periods input boxes dates */}
                   <div className="border-t pt-3 flex flex-col gap-2">
                     <span className="text-xs font-bold text-slate-800 uppercase font-mono flex items-center gap-1.5"><Calendar className="h-4 w-4 text-indigo-600" /> Geplande Reisperiode</span>
