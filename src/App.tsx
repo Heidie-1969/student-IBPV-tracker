@@ -951,17 +951,60 @@ const handleSaveContactInfo = async () => {
 
                   {/* Google Meet Online call workflow component trigger */}
                   <div className="border-t pt-3 flex flex-col gap-2">
-                    <span className="text-xs font-bold text-slate-800 uppercase font-mono flex items-center gap-1.5"><Video className="h-4 w-4 text-indigo-600 animate-pulse" /> Online Voortgangsgesprek</span>
-                    <div className="bg-slate-50 border rounded-xl p-3 text-xs leading-relaxed text-slate-600">
-                      {activeStudent.googleMeetUrl ? (
-                        <div className="flex flex-col gap-2">
-                          <p className="font-semibold text-emerald-700">● Gesprekskanaal staat momenteel live open.</p>
-                          <div className="flex gap-2">
-                            <a href={activeStudent.googleMeetUrl} target="_blank" rel="noopener noreferrer" className="flex-1 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-center font-bold text-xs">Deelnemen</a>
-                            <button type="button" onClick={() => handleStopGoogleMeet(activeStudent.id)} className="px-2.5 py-1 bg-rose-50 text-rose-600 border border-rose-200 rounded font-bold text-xs cursor-pointer">Sluiten</button>
-                          </div>
-                        </div>
-                      ) : (
+                 <span className="text-xs font-bold text-slate-800 uppercase font-mono flex items-center gap-1.5">💻 Online voortgangsgesprek</span>
+<div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs leading-relaxed text-slate-600 mt-1">
+  {activeStudent.google_meet_url && activeStudent.google_meet_url.trim() !== '' ? (
+    <div className="flex flex-col gap-2">
+      <p className="font-semibold text-emerald-700">● Gesprekskanaal staat momenteel live open.</p>
+      <div className="flex gap-2">
+        <a 
+          href={activeStudent.google_meet_url} 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          className="flex-1 text-center bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-1.5 px-3 rounded-lg transition-colors"
+        >
+          Deelnemen
+        </a>
+        <button 
+          type="button" 
+          onClick={() => {
+            const nieuweLink = prompt("Pas de Teams of Google Meet link aan:", activeStudent.google_meet_url);
+            if (nieuweLink !== null) {
+              supabase
+                .from('students')
+                .update({ google_meet_url: nieuweLink.trim() })
+                .eq('id', activeStudent.id)
+                .then(() => window.location.reload());
+            }
+          }}
+          className="bg-slate-200 hover:bg-slate-300 text-slate-700 px-2.5 py-1.5 rounded-lg transition-colors"
+        >
+          Aanpassen
+        </button>
+      </div>
+    </div>
+  ) : (
+    <div className="flex flex-col gap-2">
+      <p className="text-slate-500 italic">Nog geen actieve videobel-link ingesteld voor deze student.</p>
+      <button 
+        type="button" 
+        onClick={() => {
+          const nieuweLink = prompt("Voer een Google Meet of Microsoft Teams link in voor deze student:");
+          if (nieuweLink) {
+            supabase
+              .from('students')
+              .update({ google_meet_url: nieuweLink.trim() })
+              .eq('id', activeStudent.id)
+              .then(() => window.location.reload());
+          }
+        }}
+        className="w-full text-center bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-1.5 px-3 rounded-lg transition-colors mt-1"
+      >
+        + Link instellen
+      </button>
+    </div>
+  )}
+</div>
                         <button type="button" onClick={() => handleStartGoogleMeet(activeStudent.id)} className="w-full py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg uppercase text-xs flex items-center justify-center gap-1 cursor-pointer">🎥 Start Google Meet Gesprek</button>
                       )}
                     </div>
