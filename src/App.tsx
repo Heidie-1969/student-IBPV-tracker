@@ -946,70 +946,65 @@ const handleSaveContactInfo = async () => {
                         <input type="text" placeholder="Naam praktijkopleider" value={editSupervisorName} onChange={(e) => setEditSupervisorName(e.target.value)} className="p-1 bg-white border rounded-md focus:outline-hidden" />
                         <input type="text" placeholder="Telefoon opleider" value={editSupervisorPhone} onChange={(e) => setEditSupervisorPhone(e.target.value)} className="p-1 bg-white border rounded-md focus:outline-hidden font-mono" />
                       </div>
-                    )}
+                    )} 
                   </div>
-
-                  {/* Google Meet Online call workflow component trigger */}
-                  <div className="border-t pt-3 flex flex-col gap-2">
-                 <span className="text-xs font-bold text-slate-800 uppercase font-mono flex items-center gap-1.5">💻 Online voortgangsgesprek</span>
-<div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs leading-relaxed text-slate-600 mt-1">
-  {activeStudent.google_meet_url && activeStudent.google_meet_url.trim() !== '' ? (
-    <div className="flex flex-col gap-2">
-      <p className="font-semibold text-emerald-700">● Gesprekskanaal staat momenteel live open.</p>
-      <div className="flex gap-2">
-        <a 
-          href={activeStudent.google_meet_url} 
-          target="_blank" 
-          rel="noopener noreferrer" 
-          className="flex-1 text-center bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-1.5 px-3 rounded-lg transition-colors"
-        >
-          Deelnemen
-        </a>
-        <button 
-          type="button" 
-          onClick={() => {
-            const nieuweLink = prompt("Pas de Teams of Google Meet link aan:", activeStudent.google_meet_url);
-            if (nieuweLink !== null) {
-              supabase
-                .from('students')
-                .update({ google_meet_url: nieuweLink.trim() })
-                .eq('id', activeStudent.id)
-                .then(() => window.location.reload());
-            }
-          }}
-          className="bg-slate-200 hover:bg-slate-300 text-slate-700 px-2.5 py-1.5 rounded-lg transition-colors"
-        >
-          Aanpassen
-        </button>
-      </div>
-    </div>
-  ) : (
-    <div className="flex flex-col gap-2">
-      <p className="text-slate-500 italic">Nog geen actieve videobel-link ingesteld voor deze student.</p>
-      <button 
-        type="button" 
-        onClick={() => {
-          const nieuweLink = prompt("Voer een Google Meet of Microsoft Teams link in voor deze student:");
-          if (nieuweLink) {
-            supabase
-              .from('students')
-              .update({ google_meet_url: nieuweLink.trim() })
-              .eq('id', activeStudent.id)
-              .then(() => window.location.reload());
-          }
-        }}
-        className="w-full text-center bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-1.5 px-3 rounded-lg transition-colors mt-1"
-      >
-        + Link instellen
-      </button>
-    </div>
-  )}
-</div>
-                        <button type="button" onClick={() => handleStartGoogleMeet(activeStudent.id)} className="w-full py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg uppercase text-xs flex items-center justify-center gap-1 cursor-pointer">🎥 Start Google Meet Gesprek</button>
-                      )}
+{/* Online call workflow component trigger */}
+            <div className="border-t pt-3 flex flex-col gap-2">
+              <span className="text-xs font-bold text-slate-800 uppercase font-mono flex items-center gap-1.5">💻 Online voortgangsgesprek</span>
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs leading-relaxed text-slate-600 mt-1">
+                {activeStudent.google_meet_url && activeStudent.google_meet_url.trim() !== '' ? (
+                  <div className="flex flex-col gap-2">
+                    <p className="font-semibold text-emerald-700">● Gesprekskanaal staat momenteel live open.</p>
+                    <div className="flex gap-2">
+                      <a 
+                        href={activeStudent.google_meet_url} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="flex-1 text-center bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-1.5 px-3 rounded-lg transition-colors"
+                      >
+                        Deelnemen
+                      </a>
+                      <button 
+                        type="button" 
+                        onClick={() => {
+                          const nieuweLink = prompt("Pas de Teams of Google Meet link aan:", activeStudent.google_meet_url);
+                          if (nieuweLink !== null) {
+                            supabase
+                              .from('students')
+                              .update({ google_meet_url: nieuweLink.trim() })
+                              .eq('id', activeStudent.id)
+                              .then(() => window.location.reload());
+                          }
+                        }}
+                        className="bg-slate-200 hover:bg-slate-300 text-slate-700 px-2.5 py-1.5 rounded-lg transition-colors"
+                      >
+                        Aanpassen
+                      </button>
                     </div>
                   </div>
-
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    <p className="text-slate-500 italic">Nog geen actieve videobel-link ingesteld voor deze student.</p>
+                    <button 
+                      type="button" 
+                      onClick={() => {
+                        const nieuweLink = prompt("Voer een Google Meet of Microsoft Teams link in voor deze student:");
+                        if (nieuweLink) {
+                          supabase
+                            .from('students')
+                            .update({ google_meet_url: nieuweLink.trim() })
+                            .eq('id', activeStudent.id)
+                            .then(() => window.location.reload());
+                        }
+                      }}
+                      className="w-full text-center bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-1.5 px-3 rounded-lg transition-colors mt-1"
+                    >
+                      + Link instellen
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
                   {/* Travel periods input boxes dates */}
                   <div className="border-t pt-3 flex flex-col gap-2">
                     <span className="text-xs font-bold text-slate-800 uppercase font-mono flex items-center gap-1.5"><Calendar className="h-4 w-4 text-indigo-600" /> Geplande Reisperiode</span>
