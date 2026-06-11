@@ -1092,19 +1092,24 @@ const handleSaveContactInfo = async () => {
                         }
                       }}
                     />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const el = document.getElementById('chatInputMessage') as HTMLInputElement;
-                        if (el) {
-                          const e = new KeyboardEvent('keydown', { key: 'Enter' });
-                          el.dispatchEvent(e);
-                        }
-                      }}
-                      className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg font-medium"
-                    >
-                      Stuur
-                    </button>
+                 <button
+  type="button"
+  onClick={async () => {
+    const el = document.getElementById('chatInputMessage') as HTMLInputElement;
+    if (el && el.value.trim() !== '') {
+      const text = el.value.trim();
+      el.value = ''; // Maak invoerveld direct leeg
+
+      // Stuur het bericht rechtstreeks naar Supabase
+      await supabase.from('messages').insert([
+        { text: text, sender: 'student' }
+      ]);
+    }
+  }}
+  className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg font-medium"
+>
+  Stuur
+</button> 
                   </div>
                 </div>
               </div>
