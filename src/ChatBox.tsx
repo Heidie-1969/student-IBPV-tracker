@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
-import { Camera } from 'lucide-react';
+
 interface ChatBoxProps {
   studentId: string;
   userRole: 'student' | 'teacher';
@@ -10,34 +10,41 @@ export function ChatBox({ studentId, userRole }: ChatBoxProps) {
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState('');
 
-  useEffect(() => {
+  // Functie om handmatig berichten op te halen
+  const fetchMessages = async () => {
     if (!studentId || !supabase) return;
+    try {
+      const { data, error } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('student_id', studentId)
+        .order('created_at', { ascending: true });
 
-    // Haal bestaande berichten op
-    const fetchMessages = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('messages')
-          .select('*')
-          .eq('student_id', studentId)
-          .order('created_at', { ascending: true });
-
-        if (!error && data) setMessages(data);
-      } catch (err) {
-        console.error('Fout bij ophalen chat:', err);
+      if (!error && data) {
+        setMessages(data);
       }
-    };
+    } catch (err) {
+      console.error('Fout bij ophalen:', err);
+    }
+  };
 
+  useEffect(() => {
     fetchMessages();
 
-    // Realtime database kanaal openen
+    if (!studentId || !supabase) return;
+
+    // Realtime kanaal openen
     const channel = supabase
       .channel(`public:messages:student_id=eq.${studentId}`)
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'messages', filter: `student_id=eq.${studentId}` },
         (payload) => {
-          setMessages((current) => [...current, payload.new]);
+          setMessages((current) => {
+            // Voorkom dubbele berichten in de lokale lijst
+            if (current.some(m => m.id === payload.new.id)) return current;
+            return [...current, payload.new];
+          });
         }
       )
       .subscribe();
@@ -57,18 +64,24 @@ export function ChatBox({ studentId, userRole }: ChatBoxProps) {
     setNewMessage('');
 
     try {
-      const { error } = await supabase.from('messages').insert([
-        {
-          student_id: studentId,
+      // Sla direct op in de tabel
+      const { error } = await supabase
+        .from('messages')
+        .insert({
+          student_id: String(studentId),
           text: messageText,
-          sender: userRole,
-          created_at: new Date().toISOString(),
-        },
-      ]);
+          sender: String(userRole),
+          created_at: new Date().toISOString()
+        });
 
-      if (error) console.error('Supabase insert error:', error.message);
+      if (error) {
+        console.error('Supabase fout:', error.message);
+      } else {
+        // Direct lokaal verversen mocht realtime vertraging hebben
+        fetchMessages();
+      }
     } catch (err) {
-      console.error('Fout bij verzenden:', err);
+      console.error('Verzendfout:', err);
     }
   };
 
