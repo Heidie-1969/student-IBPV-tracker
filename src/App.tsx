@@ -45,7 +45,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { Student, StudentStatus, LocationAccuracy, AuditLog } from './types';
 import { supabase } from './supabaseClient';
-
+import { ChatBox } from './ChatBox';
 const getMapUrl = (student: any): string => {
   if (!student) return "https://www.openstreetmap.org/export/embed.html?bbox=-4.5,36.5,-4.3,36.9&layer=mapnik";
   const lat = student.latitude || 36.7213;
@@ -754,7 +754,8 @@ const handleSaveContactInfo = async () => {
                           <button type="button" onClick={() => setFormNeedsSupport(false)} className={`py-1 rounded text-xs font-bold border cursor-pointer ${!formNeedsSupport ? 'bg-slate-900 text-emerald-400 border-slate-850' : 'bg-slate-900 text-slate-400 border-transparent'}`}>Nee, gaat goed</button>
                         </div>
                         <textarea rows={2} value={formSupportDetails} onChange={(e) => setFormSupportDetails(e.target.value)} className="w-full text-xs p-2 bg-slate-900 border border-slate-800 text-white rounded-lg focus:outline-hidden" placeholder="Toelichting ondersteuning..." />
-                      </div>
+                        <ChatBox studentId={studentId} userRole="student" />
+                      </div> 
 
                       <div className="border-t border-slate-900 pt-2">
                         <label className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider block mb-1">3b. Foto's toevoegen (Sfeer of Bewijs)</label>
