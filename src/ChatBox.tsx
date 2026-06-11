@@ -15,7 +15,7 @@ export function ChatBox({ studentId, userRole }: ChatBoxProps) {
     if (!studentId || !supabase) return;
     try {
       const { data, error } = await supabase
-        .from('messages')
+        .from('student_messages')
         .select('*')
         .eq('student_id', studentId)
         .order('created_at', { ascending: true });
@@ -66,7 +66,7 @@ export function ChatBox({ studentId, userRole }: ChatBoxProps) {
     try {
       // Sla direct op in de tabel
       const { error } = await supabase
-        .from('messages')
+        .from('student_messages')
         .insert({
           student_id: String(studentId),
           text: messageText,
