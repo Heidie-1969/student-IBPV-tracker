@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from './supabaseClient'; // Pas dit pad eventueel aan naar jouw supabase-import
+import { supabase } from './supabaseClient';
 
 interface ChatBoxProps {
   studentId: string;
@@ -11,22 +11,26 @@ export function ChatBox({ studentId, userRole }: ChatBoxProps) {
   const [newMessage, setNewMessage] = useState('');
 
   useEffect(() => {
-    if (!studentId) return;
+    if (!studentId || !supabase) return;
 
     // Haal bestaande berichten op
     const fetchMessages = async () => {
-      const { data, error } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('student_id', studentId)
-        .order('created_at', { ascending: true });
+      try {
+        const { data, error } = await supabase
+          .from('messages')
+          .select('*')
+          .eq('student_id', studentId)
+          .order('created_at', { ascending: true });
 
-      if (!error && data) setMessages(data);
+        if (!error && data) setMessages(data);
+      } catch (err) {
+        console.error('Fout bij ophalen chat:', err);
+      }
     };
 
     fetchMessages();
 
-    // Luister realtime naar nieuwe berichten
+    // Realtime database kanaal openen
     const channel = supabase
       .channel(`public:messages:student_id=eq.${studentId}`)
       .on(
@@ -39,28 +43,32 @@ export function ChatBox({ studentId, userRole }: ChatBoxProps) {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      if (supabase && channel) {
+        supabase.removeChannel(channel);
+      }
     };
   }, [studentId]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim() || !studentId) return;
+    if (!newMessage.trim() || !studentId || !supabase) return;
 
     const messageText = newMessage;
     setNewMessage('');
 
-    const { error } = await supabase.from('messages').insert([
-      {
-        student_id: studentId,
-        text: messageText,
-        sender: userRole,
-        created_at: new Date().toISOString(),
-      },
-    ]);
+    try {
+      const { error } = await supabase.from('messages').insert([
+        {
+          student_id: studentId,
+          text: messageText,
+          sender: userRole,
+          created_at: new Date().toISOString(),
+        },
+      ]);
 
-    if (error) {
-      console.error('Fout bij verzenden:', error.message);
+      if (error) console.error('Supabase insert error:', error.message);
+    } catch (err) {
+      console.error('Fout bij verzenden:', err);
     }
   };
 
