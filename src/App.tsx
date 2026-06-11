@@ -1092,24 +1092,27 @@ const handleSaveContactInfo = async () => {
                         }
                       }}
                     />
-                 <button
+<button
   type="button"
   onClick={async () => {
     const el = document.getElementById('chatInputMessage') as HTMLInputElement;
-    if (el && el.value.trim() !== '') {
-      const text = el.value.trim();
-      el.value = ''; // Maak invoerveld direct leeg
+    if (el) {
+      const txt = el.value.trim();
+      if (!txt) return;
+      el.value = ''; // Maak het invoerveld direct leeg
 
-      // Stuur het bericht rechtstreeks naar Supabase
-      await supabase.from('messages').insert([
-        { text: text, sender: 'student' }
-      ]);
+      // Dit is de exacte structuur die Supabase van de docent verwacht
+      await supabase.from('messages').insert({
+        student_id: activeStudentId,
+        sender: 'teacher',
+        message: txt
+      });
     }
   }}
   className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg font-medium"
 >
   Stuur
-</button> 
+</button>
                   </div>
                 </div>
               </div>
