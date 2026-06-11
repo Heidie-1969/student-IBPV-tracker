@@ -747,28 +747,22 @@ const handleSaveContactInfo = async () => {
                         <textarea rows={2} value={formSafeEnvDetails} onChange={(e) => setFormSafeEnvDetails(e.target.value)} className="w-full text-xs p-2 bg-slate-900 border border-slate-800 text-white rounded-lg focus:outline-hidden" placeholder="Toelichting over sfeer/omgeving..." />
                       </div>
 
-      <div className="border-t border-slate-900 pt-2">
-  <label className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider block mb-2">
-    3. Realtime Chatbox (Deelnemer & Docent)
-  </label>
-  <ChatBox studentId={studentId} userRole="student" />
-</div>                  
-                        <label className="flex items-center justify-center gap-1.5 border border-dashed border-indigo-500 bg-indigo-950/30 py-2 rounded-lg cursor-pointer text-[10.5px] font-bold text-indigo-300 hover:bg-indigo-950/50">
-                          <Camera className="h-4 w-4" /> <span>Kies of maak foto</span>
-                          <input type="file" accept="image/*" multiple onChange={handlePhotoUploadChange} className="hidden" />
-                        </label>
-                        {isCompressing && <p className="text-[9px] text-indigo-300 animate-pulse font-mono mt-1">Foto's optimaliseren...</p>}
-                        {formPhotos.length > 0 && (
-                          <div className="grid grid-cols-3 gap-1 mt-1.5 p-1 bg-slate-900/50 rounded-lg">
-                            {formPhotos.map((p, idx) => (
-                              <div key={idx} className="relative aspect-square rounded-md overflow-hidden bg-slate-800 border">
-                                <img src={p} alt="" className="w-full h-full object-cover" />
-                                <button type="button" onClick={() => handleRemoveFormPhoto(idx)} className="absolute top-0.5 right-0.5 bg-rose-600 rounded-full p-0.5 text-white"><X className="h-2 w-2" /></button>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
+  <div className="border-t border-slate-900 pt-2">
+      <label className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider block mb-2">
+        3. Realtime Chatbox (Deelnemer & Docent)
+      </label>
+      <ChatBox studentId={studentId} userRole="student" />
+    </div>
+
+    <div className="border-t border-slate-900 pt-2">
+      <label className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider block mb-1">
+        3b. Foto's toevoegen (Sfeer of Bewijs)
+      </label>
+      <label className="flex items-center justify-center gap-1.5 border border-dashed border-indigo-500/55 bg-indigo-950/30 py-2 rounded-lg cursor-pointer text-xs font-medium text-indigo-300 hover:bg-indigo-950/55 transition-colors">
+        <Camera className="h-4 w-4" /> <span>Kies of maak foto</span>
+        <input type="file" accept="image/*" multiple onChange={handlePhotoUploadChange} className="hidden" />
+      </label>
+    </div> 
 
                       <button type="submit" className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-lg cursor-pointer shadow-md mt-2 uppercase tracking-wide">Cloud Check-in Insturen</button>
                     </form>
