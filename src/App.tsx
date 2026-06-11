@@ -747,58 +747,518 @@ const handleSaveContactInfo = async () => {
                         <textarea rows={2} value={formSafeEnvDetails} onChange={(e) => setFormSafeEnvDetails(e.target.value)} className="w-full text-xs p-2 bg-slate-900 border border-slate-800 text-white rounded-lg focus:outline-hidden" placeholder="Toelichting over sfeer/omgeving..." />
                       </div>
 
-<div className="border-t border-slate-900 pt-2">
-      <label className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider block mb-1">
-        3. Begeleidingsgesprek gewenst?
-      </label>
-      <div className="grid grid-cols-2 gap-2 mb-1">
-        <button 
-          type="button" 
-          onClick={() => setFormNeedsSupport(true)} 
-          className={`py-1 rounded text-xs font-bold border ${formNeedsSupport ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-slate-900/40 text-slate-400 border-slate-800'}`}
-        >
-          Contact gewenst 💬
-        </button>
-        <button 
-          type="button" 
-          onClick={() => setFormNeedsSupport(false)} 
-          className={`py-1 rounded text-xs font-bold border ${!formNeedsSupport ? 'bg-emerald-600 text-white border-emerald-500' : 'bg-slate-900/40 text-slate-400 border-slate-800'}`}
-        >
-          Nee, gaat goed
-        </button>
+                      <div className="border-t border-slate-900 pt-2">
+                        <label className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider block mb-1">3. Begeleidingsgesprek gewenst?</label>
+                        <div className="grid grid-cols-2 gap-2 mb-1">
+                          <button type="button" onClick={() => setFormNeedsSupport(true)} className={`py-1 rounded text-xs font-bold border cursor-pointer ${formNeedsSupport ? 'bg-amber-950 border-amber-500 text-amber-300' : 'bg-slate-900 text-slate-400 border-transparent'}`}>Contact gewenst 💬</button>
+                          <button type="button" onClick={() => setFormNeedsSupport(false)} className={`py-1 rounded text-xs font-bold border cursor-pointer ${!formNeedsSupport ? 'bg-slate-900 text-emerald-400 border-slate-850' : 'bg-slate-900 text-slate-400 border-transparent'}`}>Nee, gaat goed</button>
+                        </div>
+                        <textarea rows={2} value={formSupportDetails} onChange={(e) => setFormSupportDetails(e.target.value)} className="w-full text-xs p-2 bg-slate-900 border border-slate-800 text-white rounded-lg focus:outline-hidden" placeholder="Toelichting ondersteuning..." />
+                      </div>
+
+                      <div className="border-t border-slate-900 pt-2">
+                        <label className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider block mb-1">3b. Foto's toevoegen (Sfeer of Bewijs)</label>
+                        <label className="flex items-center justify-center gap-1.5 border border-dashed border-indigo-500 bg-indigo-950/30 py-2 rounded-lg cursor-pointer text-[10.5px] font-bold text-indigo-300 hover:bg-indigo-950/50">
+                          <Camera className="h-4 w-4" /> <span>Kies of maak foto</span>
+                          <input type="file" accept="image/*" multiple onChange={handlePhotoUploadChange} className="hidden" />
+                        </label>
+                        {isCompressing && <p className="text-[9px] text-indigo-300 animate-pulse font-mono mt-1">Foto's optimaliseren...</p>}
+                        {formPhotos.length > 0 && (
+                          <div className="grid grid-cols-3 gap-1 mt-1.5 p-1 bg-slate-900/50 rounded-lg">
+                            {formPhotos.map((p, idx) => (
+                              <div key={idx} className="relative aspect-square rounded-md overflow-hidden bg-slate-800 border">
+                                <img src={p} alt="" className="w-full h-full object-cover" />
+                                <button type="button" onClick={() => handleRemoveFormPhoto(idx)} className="absolute top-0.5 right-0.5 bg-rose-600 rounded-full p-0.5 text-white"><X className="h-2 w-2" /></button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      <button type="submit" className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-lg cursor-pointer shadow-md mt-2 uppercase tracking-wide">Cloud Check-in Insturen</button>
+                    </form>
+                  </div>
+
+                  <div className="border-t border-white/5 pt-2 text-center text-[9px] text-slate-500 font-mono">Gecertificeerd Cloud Kanaal Actief</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* COÖRDINATOR CONTROL CENTER FEED */}
+        {currentRole === 'COÖRDINATOR' && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            {/* Add manual student trigger form */}
+            <div className="lg:col-span-8 flex flex-col gap-6">
+              <div className="bg-white border rounded-xl shadow-xs overflow-hidden">
+                <button onClick={() => setShowAddStudentForm(!showAddStudentForm)} className="w-full p-4 bg-slate-50 hover:bg-slate-100 flex items-center justify-between border-b text-left">
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-1.5 bg-indigo-50 border rounded-lg text-indigo-700"><UserPlus className="h-4 w-4" /></div>
+                    <div>
+                      <h3 className="font-bold text-sm text-slate-800">Nieuwe Student Handmatig Toevoegen</h3>
+                      <p className="text-[11px] text-slate-500">Registreer direct een nieuw leerdossier in de realtime cloud database</p>
+                    </div>
+                  </div>
+                  <div className="border rounded-md p-1 font-bold text-xs">{showAddStudentForm ? '✕' : '＋'}</div>
+                </button>
+
+                <AnimatePresence>
+                  {showAddStudentForm && (
+                    <motion.form initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} onSubmit={handleAddNewStudent} className="p-5 flex flex-col gap-4 bg-white border-l-4 border-indigo-600">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="flex flex-col gap-1"><label className="text-xs font-semibold text-slate-700">Naam Student</label><input type="text" required placeholder="Bijv. Amy Geerts" value={newStudentName} onChange={(e) => setNewStudentName(e.target.value)} className="text-xs p-2 bg-slate-50 border rounded-lg focus:outline-hidden" /></div>
+                        <div className="flex flex-col gap-1"><label className="text-xs font-semibold text-slate-700">CIOS E-mailadres</label><input type="email" required placeholder="ageerts2@student.cioszuidwest.nl" value={newStudentEmail} onChange={(e) => setNewStudentEmail(e.target.value)} className="text-xs p-2 bg-slate-50 border rounded-lg focus:outline-hidden" /></div>
+                        <div className="flex flex-col gap-1"><label className="text-xs font-semibold text-slate-700">Bestemming (Stad)</label><input type="text" required placeholder="Bijv. Zakynthos of Málaga" value={customCity} onChange={(e) => setCustomCity(e.target.value)} className="text-xs p-2 bg-slate-50 border rounded-lg focus:outline-hidden" /></div>
+                        <div className="flex flex-col gap-1"><label className="text-xs font-semibold text-slate-700">Land</label><input type="text" placeholder="Bijv. Griekenland of Spanje" value={customCountry} onChange={(e) => setCustomCountry(e.target.value)} className="text-xs p-2 bg-slate-50 border rounded-lg focus:outline-hidden" /></div>
+                        
+                        <div className="flex flex-col gap-1 col-span-1 sm:col-span-2">
+                          <div className="flex justify-between items-center mb-0.5">
+                            <label className="text-xs font-semibold text-slate-700">Coördinaten & Live Kaart-verificatie</label>
+                            <button type="button" onClick={() => setShowManualCoords(!showManualCoords)} className="text-[10px] text-indigo-600 font-bold underline cursor-pointer">
+                              {showManualCoords ? '⚡ Gebruik automatische zoeker' : '⚙️ Handmatige cijfers invoeren'}
+                            </button>
+                          </div>
+
+                          {showManualCoords ? (
+                            <div className="grid grid-cols-2 gap-2 bg-slate-50 p-2.5 rounded-lg border">
+                              <div className="flex flex-col gap-0.5"><span className="text-[9px] uppercase font-mono text-slate-400">Breedtegraad (Lat)</span><input type="text" placeholder="37.8617" value={manualLat} onChange={(e) => setManualLat(e.target.value)} className="text-xs p-1.5 bg-white border rounded-md" /></div>
+                              <div className="flex flex-col gap-0.5"><span className="text-[9px] uppercase font-mono text-slate-400">Lengtegraad (Lng)</span><input type="text" placeholder="20.7438" value={manualLng} onChange={(e) => setManualLng(e.target.value)} className="text-xs p-1.5 bg-white border rounded-md" /></div>
+                            </div>
+                          ) : (
+                            <div className="text-[11px] font-medium p-2 bg-indigo-50 border border-indigo-100 rounded-lg text-indigo-700 animate-pulse">
+                              {coordSearchMessage || 'Typ een stad hierboven. OpenStreetMap zoekt de coördinaten direct live op!'}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex flex-col gap-1 col-span-1 sm:col-span-2"><label className="text-xs font-semibold text-slate-700">Stagebedrijf / Host-Organisatie</label><input type="text" placeholder="Zakynthos Watersports Academy of Lokale Sportorganisatie" value={newStudentHostOrg} onChange={(e) => setNewStudentHostOrg(e.target.value)} className="text-xs p-2 bg-slate-50 border rounded-lg focus:outline-hidden" /></div>
+                      </div>
+                      <button type="submit" disabled={isSearchingCoords} className="self-end px-5 py-2 bg-indigo-600 text-white font-bold text-xs rounded-lg uppercase tracking-wider cursor-pointer shadow-md disabled:bg-slate-300">Opslaan in Cloud ☁️</button>
+                    </motion.form>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Realtime Table Feed list grid view */}
+              <div className="bg-white border rounded-xl shadow-xs flex flex-col overflow-hidden">
+                <div className="p-4 border-b bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <h2 className="font-bold text-slate-850 text-sm flex items-center gap-2"><Activity className="h-4 w-4 text-indigo-600" /> Realtime Mobiliteits-Dashboard</h2>
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <input type="text" placeholder="Zoek op naam of locatie..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="text-xs p-1.5 border rounded-lg bg-white w-full sm:w-48 focus:outline-hidden" />
+                    <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="text-xs border rounded-lg p-1.5 cursor-pointer bg-white">
+                      <option value="ALL">Alle statussen</option>
+                      <option value="Thuis">Thuis</option>
+                      <option value="EMERGENCY">🚨 Calamiteiten</option>
+                      <option value="Veilig aangekomen">Veilig aangekomen</option>
+                      <option value="Bezig op stage met activiteiten">Bezig op stage met activiteiten</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead className="bg-slate-50 text-slate-500 uppercase text-[9px] font-extrabold tracking-wider border-b">
+                      <tr>
+                        <th className="px-5 py-3">Deelnemer</th>
+                        <th className="px-5 py-3">Stage Bestemming</th>
+                        <th className="px-5 py-3">Cloud Status</th>
+                        <th className="px-5 py-3 text-right">Laatste Cloud Update</th>
+                        <th className="px-5 py-3 text-center">Actie</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-xs">
+                      {filteredStudents.map((stud) => (
+                        <tr key={stud.id} onClick={() => setActiveStudentId(stud.id)} className={`cursor-pointer transition-colors ${activeStudentId === stud.id ? 'bg-slate-100/80' : 'bg-white hover:bg-slate-50'} ${stud.hasActiveEmergency ? 'bg-rose-50' : ''}`}>
+                          <td className="px-5 py-3 font-semibold">
+                            <p className="text-slate-900 flex items-center gap-1.5">{stud.name} {stud.hasActiveEmergency && <span className="w-1.5 h-1.5 bg-rose-600 rounded-full animate-ping" />}</p>
+                            <span className="text-[10px] text-slate-400 font-normal">{stud.email}</span>
+                          </td>
+                          <td className="px-5 py-3">
+                            <p className="text-slate-800 font-medium">{stud.city}, {stud.country}</p>
+                            <span className="text-[10px] text-slate-400 font-mono block">{stud.hostOrganization}</span>
+                          </td>
+                          <td className="px-5 py-3">
+                            <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border uppercase ${stud.hasActiveEmergency ? 'bg-rose-100 text-rose-700 border-rose-300' : 'bg-slate-100 text-slate-700'}`}>
+                              {stud.hasActiveEmergency ? '🚨 CALAMITEIT' : stud.status}
+                            </span>
+                          </td>
+                          <td className="px-5 py-3 text-right">
+                            <p className="italic text-slate-600 truncate max-w-[150px]">"{stud.lastMessage || 'Geen check-in tekst'}"</p>
+                            <span className="text-[9px] text-slate-400 font-mono block mt-0.5">{stud.lastUpdate ? new Date(stud.lastUpdate).toLocaleTimeString('nl-NL') : 'Niet actief'}</span>
+                          </td>
+                          <td className="px-5 py-3 text-center">
+                            <button type="button" onClick={(e) => { e.stopPropagation(); setStudentToDelete(stud); }} className="p-1 text-rose-600 border border-rose-200 bg-rose-50 rounded-md cursor-pointer hover:bg-rose-100"><Trash2 className="h-3.5 w-3.5" /></button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Secure Log Audits Display terminal box */}
+              <div className="bg-slate-900 text-slate-400 p-4 rounded-xl border border-slate-800 font-mono text-[10px] shadow-md">
+                <span className="text-white font-bold block border-b border-slate-800 pb-2 mb-2 uppercase tracking-wide">🛡️ Realtime Database & GDPR Audit Trail</span>
+                <div className="space-y-1.5 max-h-32 overflow-y-auto">
+                  {auditLogs.map(l => (
+                    <div key={l.id} className="border-b border-slate-800/40 pb-1 last:border-0 flex justify-between gap-4">
+                      <span className="text-slate-600 shrink-0">{new Date(l.timestamp).toLocaleTimeString('nl-NL')}</span>
+                      <p className="text-slate-200 flex-1"><strong className="text-emerald-400 font-normal">{l.actor}:</strong> {l.action}</p>
+                      <span className="text-slate-600 truncate max-w-[100px]">Target: {l.target_student || 'Systeem'}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Right Side Detail Dossier Panel */}
+            <div className="lg:col-span-4 flex flex-col gap-6">
+              {activeStudent && (
+                <div className="bg-white border rounded-xl p-5 shadow-xs flex flex-col gap-4">
+                  <div className="border-b pb-3 flex justify-between items-start">
+                    <div>
+                      <span className="text-[9px] text-slate-400 font-bold uppercase font-mono block">Dossier deelnemer</span>
+                      <h3 className="font-bold text-slate-900 text-sm font-display mt-0.5">{activeStudent.name}</h3>
+                    </div>
+                    <button onClick={() => { setLoggedInStudentId(activeStudent.id); setCurrentRole('STUDENT'); }} className="p-1 px-2 bg-slate-900 text-white rounded text-[10px] font-bold cursor-pointer">Simuleer Mobiel 📱</button>
+                  </div>
+
+                  {activeStudent.hasActiveEmergency && (
+                    <div className="bg-rose-50 border border-rose-300 rounded-xl p-4 flex flex-col gap-2.5">
+                      <span className="text-[10px] font-bold text-rose-700 block">🚨 CALAMITEIT IN BEHANDELING</span>
+                      <p className="text-xs bg-white border border-rose-200 p-2 rounded italic">"{activeStudent.emergencyMessage}"</p>
+                      <button type="button" onClick={() => resolveEmergency(activeStudent.id)} className="w-full py-1.5 bg-emerald-600 text-white font-bold text-xs rounded-lg uppercase cursor-pointer shadow-xs">Alarm Sluiten / Veilig</button>
+                    </div>
+                  )}
+
+                  {/* Geo Visualization OpenStreetMap box embed */}
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-xs font-bold text-slate-700 uppercase font-mono flex items-center gap-1.5"><Map className="h-4 w-4 text-indigo-600" /> Geo-Verificatie</span>
+                    {activeStudent.consentGiven && activeStudent.status !== 'Onderweg' ? (
+                      <div className="bg-slate-950 border rounded-xl h-60 overflow-hidden relative">
+                        <iframe width="100%" height="100%" title="Map" src={getMapUrl(activeStudent)} className="w-full h-full border-0 absolute" />
+                      </div>
+                    ) : (
+                      <div className="bg-slate-50 border rounded-xl h-40 flex flex-col items-center justify-center text-center p-4 text-slate-400 text-xs">
+                        <Lock className="h-6 w-6 mb-1 text-slate-300" />
+                        <p className="font-semibold text-slate-600">Geen actieve GPS-stream</p>
+                        <p className="text-[10px] mt-0.5">Zodra de student via de mobiel inlogt en een check-in verstuurt, verschijnt de live kaart hier.</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Contact info metadata grid lists */}
+                  <div className="border-t pt-3 flex flex-col gap-2 text-xs">
+                    <div className="flex justify-between items-center">
+                      <span className="font-bold text-slate-800 uppercase font-mono text-[11px]">Contact & Stagegegevens</span>
+                      {!isEditingContactInfo ? (
+                        <button type="button" onClick={() => setIsEditingContactInfo(true)} className="text-[10px] text-indigo-650 font-bold underline cursor-pointer">Aanpassen</button>
+                      ) : (
+                        <div className="flex gap-1.5">
+                          <button type="button" onClick={handleSaveContactInfo} className="bg-emerald-600 text-white p-0.5 px-2 rounded text-[10px] font-bold cursor-pointer">Opslaan</button>
+                          <button type="button" onClick={() => setIsEditingContactInfo(false)} className="bg-slate-100 text-slate-600 p-0.5 px-2 rounded text-[10px] font-bold cursor-pointer">✕</button>
+                        </div>
+                      )}
+                    </div>
+
+                    {!isEditingContactInfo ? (
+                      <div className="space-y-1.5 text-[11px]">
+                        <div className="flex justify-between"><span className="text-slate-400">Partner BPV:</span><span className="font-semibold truncate max-w-[150px] text-right">{activeStudent.hostOrganization}</span></div>
+                        <div className="flex justify-between"><span className="text-slate-400">Mobiel Deelnemer:</span><span className="font-mono text-slate-800">{activeStudent.phone || 'Niet ingevuld'}</span></div>
+                        <div className="flex justify-between"><span className="text-slate-400">Thuisfront Contact:</span><span className="font-semibold text-right">{activeStudent.emergencyContactName || 'Niet ingevuld'}</span></div>
+                        <div className="flex justify-between"><span className="text-slate-400">Noodnummer:</span><span className="font-mono text-slate-800">{activeStudent.emergencyContactPhone || 'Niet ingevuld'}</span></div>
+                        <div className="border-t border-dashed my-1" />
+                        <div className="flex justify-between"><span className="text-indigo-700 font-semibold">Praktijkopleider:</span><span className="font-semibold text-right text-slate-800">{activeStudent.supervisorName || 'Niet ingevuld'}</span></div>
+                        <div className="flex justify-between"><span className="text-slate-400">Tel. Opleider:</span><span className="font-mono text-slate-800">{activeStudent.supervisorPhone || 'Niet ingevuld'}</span></div>
+                      </div>
+                    ) : (
+                      <div className="bg-slate-50 border p-2 rounded-lg flex flex-col gap-1.5 text-[10px]">
+                        <input type="text" placeholder="Stagebedrijf" value={editHostOrg} onChange={(e) => setEditHostOrg(e.target.value)} className="p-1 bg-white border rounded-md focus:outline-hidden" />
+                        <input type="text" placeholder="Telefoon student" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} className="p-1 bg-white border rounded-md focus:outline-hidden font-mono" />
+                        <input type="text" placeholder="Thuisfront naam" value={editEmergencyContactName} onChange={(e) => setEditEmergencyContactName(e.target.value)} className="p-1 bg-white border rounded-md focus:outline-hidden" />
+                        <input type="text" placeholder="Noodnummer" value={editEmergencyContactPhone} onChange={(e) => setEditEmergencyContactPhone(e.target.value)} className="p-1 bg-white border rounded-md focus:outline-hidden font-mono" />
+                        <div className="border-t border-dashed my-0.5" />
+                        <input type="text" placeholder="Naam praktijkopleider" value={editSupervisorName} onChange={(e) => setEditSupervisorName(e.target.value)} className="p-1 bg-white border rounded-md focus:outline-hidden" />
+                        <input type="text" placeholder="Telefoon opleider" value={editSupervisorPhone} onChange={(e) => setEditSupervisorPhone(e.target.value)} className="p-1 bg-white border rounded-md focus:outline-hidden font-mono" />
+                      </div>
+                    )} 
+                  </div>
+{/* Online call workflow & Realtime Chatbox Component */}
+            <div className="border-t pt-4 flex flex-col gap-4">
+              
+              {/* 1. Videobel Sectie */}
+              <div>
+                <span className="text-xs font-bold text-slate-800 uppercase font-mono flex items-center gap-1.5">💻 Online voortgangsgesprek</span>
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs leading-relaxed text-slate-600 mt-1">
+                  {activeStudent.google_meet_url && activeStudent.google_meet_url.trim() !== '' ? (
+                    <div className="flex flex-col gap-2">
+                      <p className="font-semibold text-emerald-700">● Gesprekskanaal staat momenteel live open.</p>
+                      <div className="flex gap-2">
+                        <a 
+                          href={activeStudent.google_meet_url} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="flex-1 text-center bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-1.5 px-3 rounded-lg transition-colors"
+                        >
+                          Deelnemen
+                        </a>
+                        <button 
+                          type="button" 
+                          onClick={async () => {
+                            const nw = prompt("Pas de link aan:", activeStudent.google_meet_url);
+                            if (nw !== null) {
+                              await supabase.from('students').update({ google_meet_url: nw.trim() }).eq('id', activeStudent.id);
+                              activeStudent.google_meet_url = nw.trim();
+                              setActiveStudent({...activeStudent});
+                            }
+                          }}
+                          className="bg-slate-200 hover:bg-slate-300 text-slate-700 px-2.5 py-1.5 rounded-lg transition-colors"
+                        >
+                          Aanpassen
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-2">
+                      <p className="text-slate-500 italic">Nog geen actieve videobel-link ingesteld voor deze student.</p>
+                      <button 
+                        type="button" 
+                        onClick={async () => {
+                          const nw = prompt("Voer een Google Meet of Teams link in:");
+                          if (nw) {
+                            await supabase.from('students').update({ google_meet_url: nw.trim() }).eq('id', activeStudent.id);
+                            activeStudent.google_meet_url = nw.trim();
+                            setActiveStudent({...activeStudent});
+                          }
+                        }}
+                        className="w-full text-center bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-1.5 px-3 rounded-lg transition-colors"
+                      >
+                        + Link instellen
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+            {/* 2. Realtime Chatbox Sectie */}
+              <div>
+                <span className="text-xs font-bold text-slate-800 uppercase font-mono flex items-center gap-1.5">💬 Realtime Chatbox (Deelnemer & Docent)</span>
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs mt-1 flex flex-col gap-3">
+                  
+                  {/* Berichtenlijst */}
+                  <div className="h-48 overflow-y-auto bg-white border border-slate-200 rounded-lg p-3 flex flex-col gap-2" id="chatMessageList">
+                    {chatMessages.length === 0 ? (
+                      <p className="text-[11px] text-slate-400 italic text-center py-6">Nog geen chatberichten. Typ hieronder een bericht om de chat te starten.</p>
+                    ) : (
+                      chatMessages.map((msg) => (
+                        <div 
+                          key={msg.id} 
+                          className={`p-2 rounded-xl max-w-[85%] text-xs leading-tight ${
+                            msg.sender === 'teacher' 
+                              ? 'bg-indigo-600 text-white self-end rounded-br-none' 
+                              : 'bg-slate-100 text-slate-800 self-start rounded-bl-none'
+                          }`}
+                        >
+                          <span className="font-bold block text-[9px] opacity-75 mb-0.5">
+                            {msg.sender === 'teacher' ? 'Docent' : 'Student'}
+                          </span>
+                          {msg.message}
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  {/* Invoerveld */}
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      id="chatInputMessage"
+                      placeholder="Typ een bericht naar de student..."
+                      className="flex-1 bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-indigo-500"
+                      onKeyDown={async (e) => {
+                        if (e.key === 'Enter') {
+                          const txt = e.currentTarget.value.trim();
+                          if (!txt) return;
+                          
+                          e.currentTarget.value = '';
+                          
+                          await supabase.from('messages').insert({
+                            student_id: activeStudentId,
+                            sender: 'teacher',
+                            message: txt
+                          });
+                        }
+                      }}
+                    />
+<button
+  type="button"
+  onClick={async () => {
+    const el = document.getElementById('chatInputMessage') as HTMLInputElement;
+    if (el) {
+      const txt = el.value.trim();
+      if (!txt) return;
+      el.value = ''; // Maak het invoerveld direct leeg
+
+      // Dit is de exacte structuur die Supabase van de docent verwacht
+      await supabase.from('messages').insert({
+        student_id: activeStudentId,
+        sender: 'teacher',
+        message: txt
+      });
+    }
+  }}
+  className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg font-medium"
+>
+  Stuur
+</button>
+                  </div>
+                </div>
+              </div>
+
+            </div> 
+                  <div className="border-t pt-3 flex flex-col gap-2">
+                    <span className="text-xs font-bold text-slate-800 uppercase font-mono flex items-center gap-1.5"><Calendar className="h-4 w-4 text-indigo-600" /> Geplande Reisperiode</span>
+                    <div className="bg-slate-50 border rounded-xl p-3 flex flex-col gap-2.5">
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="flex flex-col gap-0.5"><label className="text-[9px] uppercase font-bold text-slate-500 font-mono">Vertrek</label><input type="date" value={dossierDepartureDate} onChange={(e) => setDossierDepartureDate(e.target.value)} className="text-xs p-1 bg-white border rounded cursor-pointer text-slate-800" /></div>
+                        <div className="flex flex-col gap-0.5"><label className="text-[9px] uppercase font-bold text-slate-500 font-mono">Terugkomst</label><input type="date" value={dossierReturnDate} onChange={(e) => setDossierReturnDate(e.target.value)} className="text-xs p-1 bg-white border rounded cursor-pointer text-slate-800" /></div>
+                      </div>
+                      <button type="button" onClick={handleSaveTravelDates} className="w-full py-1 bg-indigo-600 text-white text-xs font-bold rounded-lg uppercase tracking-wide cursor-pointer">Periode Opslaan</button>
+                    </div>
+                  </div>
+
+                  {/* Sfeer en Ondersteuningsbehoeften Intake logs view panel side block */}
+                  <div className="border-t pt-3 flex flex-col gap-3 text-xs leading-relaxed">
+                    <span className="font-bold text-slate-800 uppercase font-mono text-[11px] flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-indigo-600" /> Ingestuurde Begeleidingsstatus</span>
+                    <div className={`p-2.5 rounded-xl border italic ${activeStudent.isSafeEnv ?? true ? 'bg-emerald-50/50 border-emerald-100' : 'bg-rose-50 border-rose-100'}`}>
+                      <span className="text-[9.5px] font-bold uppercase not-italic tracking-wider text-slate-400 block mb-0.5">2. Veiligheid & Omgeving:</span>
+                      "{activeStudent.safeEnvDetails || 'Geen toelichting meegestuurd.'}"
+                    </div>
+                    <div className={`p-2.5 rounded-xl border italic ${activeStudent.needsSupport ? 'bg-amber-50 border-amber-100' : 'bg-slate-50'}`}>
+                      <span className="text-[9.5px] font-bold uppercase not-italic tracking-wider text-slate-400 block mb-0.5">3. Extra Ondersteuningsbehoefte:</span>
+                      "{activeStudent.supportDetails || 'Geen behoeften of toelichting meegestuurd.'}"
+                    </div>
+
+                    {/* Real cloud uploaded photos visualization grid carousel */}
+                    <div className="flex flex-col gap-1.5 pt-1 border-t border-dashed">
+                      <span className="text-[10px] font-bold text-slate-700 uppercase font-mono flex items-center gap-1.5"><Camera className="h-4 w-4 text-indigo-600" /> BPV Foto-Dossier (Cloud)</span>
+                      {activeStudent.uploadedPhotos && activeStudent.uploadedPhotos.length > 0 ? (
+                        <div className="grid grid-cols-2 gap-1.5 bg-slate-50 p-2 rounded-xl border">
+                          {activeStudent.uploadedPhotos.map((p, i) => (
+                            <div key={i} className="relative aspect-square border bg-white rounded-lg overflow-hidden shadow-2xs cursor-zoom-in" onClick={() => setSelectedFullImage(p)}>
+                              <img src={p} alt="" className="w-full h-full object-cover" />
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-[11px] text-slate-400 italic text-center p-2 bg-slate-50 rounded-lg border border-dashed">Nog geen foto's geüpload.</p>
+                      )}
+                    </div>
+                  </div>
+
+                </div>
+              )}
+            </div>
+
+          </div>
+        )}
+
       </div>
-      <textarea 
-        rows={2} 
-        value={formSupportDetails} 
-        onChange={(e) => setFormSupportDetails(e.target.value)} 
-        placeholder="Toelichting ondersteuning..." 
-        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500" 
-      />
+
+      {/* Emergency Modal trigger */}
+      <AnimatePresence>
+        {showEmergencyModal && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} className="bg-white rounded-2xl max-w-sm w-full overflow-hidden shadow-2xl">
+              <div className="bg-rose-600 p-4 text-white font-bold text-sm flex items-center gap-1.5 uppercase font-mono"><ShieldAlert className="h-5 w-5" /><span>Acute Calamiteit Melden</span></div>
+              <form onSubmit={triggerEmergency} className="p-5 flex flex-col gap-4">
+                <textarea rows={3} placeholder="Omschrijf de noodsituatie bondig..." value={emergencyText} onChange={(e) => setEmergencyText(e.target.value)} className="w-full p-2 bg-slate-50 border text-xs rounded-lg text-slate-800" required />
+                <div className="grid grid-cols-2 gap-3">
+                  <button type="button" onClick={() => setShowEmergencyModal(false)} className="py-1.5 border rounded-lg text-xs font-bold text-slate-600 cursor-pointer">Annuleren</button>
+                  <button type="submit" className="py-1.5 bg-rose-600 text-white rounded-lg text-xs font-bold cursor-pointer">Verstuur Noodsignaal 🚨</button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Simulated authentication switcher login dialog popup */}
+      <AnimatePresence>
+        {showLoginModal && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} className="bg-white rounded-2xl border max-w-md w-full overflow-hidden shadow-2xl">
+              <div className="bg-indigo-600 p-4 text-white font-bold text-sm flex items-center gap-1.5 font-mono uppercase"><Lock className="h-4 w-4" /><span>CIOS Live Cloud Authenticator</span></div>
+              <div className="p-5 flex flex-col gap-4">
+                
+                {students.length === 0 ? (
+                  <div className="text-center p-4 bg-slate-50 border border-dashed rounded-xl flex flex-col items-center gap-3">
+                    <p className="text-xs text-slate-600 font-medium">De cloud-database is momenteel nog helemaal leeg. Log eerst in als Coördinator om student-accounts te registreren.</p>
+                    <button type="button" onClick={() => { setCurrentRole('COÖRDINATOR'); setShowLoginModal(false); }} className="px-4 py-2 bg-indigo-600 text-white font-bold text-xs rounded-lg uppercase cursor-pointer">Inloggen als Coördinator (Heidie)</button>
+                  </div>
+                ) : (
+                  <div>
+                    <span className="text-[10px] text-slate-400 font-bold uppercase block mb-1.5">Directe Snelstarter (Kies profiel):</span>
+                    <div className="flex flex-col gap-1 max-h-48 overflow-y-auto">
+                      <button type="button" onClick={() => { setCurrentRole('COÖRDINATOR'); setShowLoginModal(false); }} className="w-full text-left p-2 bg-indigo-50 border border-indigo-200 text-indigo-900 font-bold rounded-lg text-xs cursor-pointer flex justify-between"><span>🔑 Heidie van Remortele (Coördinator)</span> <span className="text-[8px] bg-indigo-200 p-0.5 px-1 rounded">BEHEER</span></button>
+                      {students.map(s => (
+                        <button key={s.id} type="button" onClick={() => { setLoggedInStudentId(s.id); setCurrentRole('STUDENT'); setShowLoginModal(false); }} className="w-full text-left p-2 bg-slate-50 border rounded-lg text-xs font-semibold text-slate-700 cursor-pointer">👤 {s.name} ({s.email})</button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="border-t pt-3">
+                  <span className="text-[10px] text-slate-400 font-bold uppercase block mb-1">Handmatige LDAP-Simulatie:</span>
+                  <form onSubmit={handleSimulatedLogin} className="flex gap-1.5">
+                    <input type="text" placeholder="Typ 'heidie' of student-email..." value={typedEmail} onChange={(e) => setTypedEmail(e.target.value)} className="flex-1 text-xs p-2 bg-slate-50 border rounded-lg focus:outline-hidden" />
+                    <button type="submit" className="bg-indigo-600 text-white font-bold text-xs px-4 rounded-lg cursor-pointer">Login</button>
+                  </form>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* In-app modal delete confirmation */}
+      <AnimatePresence>
+        {studentToDelete && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} className="bg-white rounded-2xl p-5 max-w-sm w-full flex flex-col gap-4 shadow-xl">
+              <div className="text-center">
+                <h4 className="font-bold text-sm text-slate-850">Dossier van {studentToDelete.name} permanent wissen?</h4>
+                <p className="text-xs text-slate-500 leading-relaxed mt-1.5">Deze actie wist alle realtime cloud check-ins en foto's onherroepelijk uit de database conform AVG-richtlijnen.</p>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <button type="button" onClick={() => setStudentToDelete(null)} className="py-2 bg-slate-100 rounded-xl text-xs font-bold cursor-pointer">Annuleren</button>
+                <button type="button" onClick={confirmDeleteStudent} className="py-2 bg-rose-600 text-white rounded-xl text-xs font-bold cursor-pointer">Permanent wissen</button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Photo lightbox zoom full overlay popups */}
+      <AnimatePresence>
+        {selectedFullImage && (
+          <div className="fixed inset-0 bg-slate-950/90 flex items-center justify-center p-4 z-50 cursor-zoom-out" onClick={() => setSelectedFullImage(null)}>
+            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} className="relative max-w-4xl">
+              <img src={selectedFullImage} alt="" className="max-w-full max-h-[80vh] rounded-xl shadow-2xl" />
+              <button onClick={() => setSelectedFullImage(null)} className="mt-4 mx-auto px-4 py-1.5 bg-indigo-600 text-white text-xs font-bold rounded-lg cursor-pointer block">Sluiten</button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Footer */}
+      <footer className="h-10 bg-slate-100 border-t px-4 sm:px-8 flex items-center justify-between text-[9px] text-slate-500 font-bold font-mono tracking-widest mt-auto uppercase">
+        <div>Zuidwest-Nederland Cloud monitor</div>
+        <div>© 2026 CIOS GlobalLink — Realtime Supabase Database Connected</div>
+      </footer>
+
     </div>
-
-    <div className="border-t border-slate-900 pt-2">
-      <label className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider block mb-1">
-        3b. Foto's toevoegen (Sfeer of Bewijs)
-      </label>
-      <label className="flex items-center justify-center gap-1.5 border border-dashed border-indigo-500/55 bg-indigo-950/30 py-2 rounded-lg cursor-pointer text-xs font-medium text-indigo-300 hover:bg-indigo-950/55 transition-colors">
-        <Camera className="h-4 w-4" /> <span>Kies of maak foto</span>
-        <input type="file" accept="image/*" multiple onChange={handlePhotoUploadChange} className="hidden" />
-      </label>
-    </div>
-
-    <button type="submit" className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold transition-colors mt-4">
-      CLOUD CHECK-IN INSTUREN
-    </button>
-  </form>
-</div>
-
-<footer className="mt-8 border-t border-slate-900 pt-4 text-center text-[10px] text-slate-600 space-y-1">
-  <div>Zuidwest-Nederland Cloud monitor</div>
-  <div>© 2026 CIOS GlobalLink – Realtime Supabase Database</div>
-</footer>
-
-</div> 
-);
+  );
 }
-
-export default App;
