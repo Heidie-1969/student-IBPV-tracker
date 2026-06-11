@@ -797,6 +797,8 @@ const handleSaveContactInfo = async () => {
   <div>© 2026 CIOS GlobalLink – Realtime Supabase Database</div>
 </footer>
 
-</div>
+</div> 
 );
 }
+
+export default App;
