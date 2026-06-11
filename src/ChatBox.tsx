@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
-
+import { Camera } from 'lucide-react';
 interface ChatBoxProps {
   studentId: string;
   userRole: 'student' | 'teacher';
