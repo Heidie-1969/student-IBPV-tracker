@@ -752,16 +752,28 @@ const handleSaveContactInfo = async () => {
         3. Begeleidingsgesprek gewenst?
       </label>
       <div className="grid grid-cols-2 gap-2 mb-1">
-        <button type="button" onClick={() => setFormNeedsSupport(true)} className={`py-1 rounded text-xs font-bold border ${formNeedsSupport ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-slate-900/40 text-slate-400 border-slate-800'}`}>
+        <button 
+          type="button" 
+          onClick={() => setFormNeedsSupport(true)} 
+          className={`py-1 rounded text-xs font-bold border ${formNeedsSupport ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-slate-900/40 text-slate-400 border-slate-800'}`}
+        >
           Contact gewenst 💬
         </button>
-        <button type="button" onClick={() => setFormNeedsSupport(false)} className={`py-1 rounded text-xs font-bold border ${!formNeedsSupport ? 'bg-emerald-600 text-white border-emerald-500' : 'bg-slate-900/40 text-slate-400 border-slate-800'}`}>
+        <button 
+          type="button" 
+          onClick={() => setFormNeedsSupport(false)} 
+          className={`py-1 rounded text-xs font-bold border ${!formNeedsSupport ? 'bg-emerald-600 text-white border-emerald-500' : 'bg-slate-900/40 text-slate-400 border-slate-800'}`}
+        >
           Nee, gaat goed
         </button>
       </div>
-      <textarea rows={2} value={formSupportDetails} onChange={(e) => setFormSupportDetails(e.target.value)} placeholder="Toelichting ondersteuning..." className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500" />
-    </div>
-      <textarea rows={2} value={formSupportDetails} onChange={(e) => setFormSupportDetails(e.target.value)} placeholder="Toelichting ondersteuning..." className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500" />
+      <textarea 
+        rows={2} 
+        value={formSupportDetails} 
+        onChange={(e) => setFormSupportDetails(e.target.value)} 
+        placeholder="Toelichting ondersteuning..." 
+        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500" 
+      />
     </div>
 
     <div className="border-t border-slate-900 pt-2">
@@ -772,18 +784,13 @@ const handleSaveContactInfo = async () => {
         <Camera className="h-4 w-4" /> <span>Kies of maak foto</span>
         <input type="file" accept="image/*" multiple onChange={handlePhotoUploadChange} className="hidden" />
       </label>
-    </div> 
+    </div>
 
-                      <button type="submit" className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-lg cursor-pointer shadow-md mt-2 uppercase tracking-wide">Cloud Check-in Insturen</button>
-                    </form>
-                  </div>
-
-                  <div className="border-t border-white/5 pt-2 text-center text-[9px] text-slate-500 font-mono">Gecertificeerd Cloud Kanaal Actief</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+    <button type="submit" className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold transition-colors mt-4">
+      CLOUD CHECK-IN INSTUREN
+    </button>
+  </form>
+</div>
 
         {/* COÖRDINATOR CONTROL CENTER FEED */}
         {currentRole === 'COÖRDINATOR' && (
