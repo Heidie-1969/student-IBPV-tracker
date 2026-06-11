@@ -747,11 +747,21 @@ const handleSaveContactInfo = async () => {
                         <textarea rows={2} value={formSafeEnvDetails} onChange={(e) => setFormSafeEnvDetails(e.target.value)} className="w-full text-xs p-2 bg-slate-900 border border-slate-800 text-white rounded-lg focus:outline-hidden" placeholder="Toelichting over sfeer/omgeving..." />
                       </div>
 
-  <div className="border-t border-slate-900 pt-2">
-      <label className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider block mb-2">
-        3. Realtime Chatbox (Deelnemer & Docent)
+<div className="border-t border-slate-900 pt-2">
+      <label className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider block mb-1">
+        3. Begeleidingsgesprek gewenst?
       </label>
-      <ChatBox studentId={studentId} userRole="student" />
+      <div className="grid grid-cols-2 gap-2 mb-1">
+        <button type="button" onClick={() => setFormNeedsSupport(true)} className={`py-1 rounded text-xs font-bold border ${formNeedsSupport ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-slate-900/40 text-slate-400 border-slate-800'}`}>
+          Contact gewenst 💬
+        </button>
+        <button type="button" onClick={() => setFormNeedsSupport(false)} className={`py-1 rounded text-xs font-bold border ${!formNeedsSupport ? 'bg-emerald-600 text-white border-emerald-500' : 'bg-slate-900/40 text-slate-400 border-slate-800'}`}>
+          Nee, gaat goed
+        </button>
+      </div>
+      <textarea rows={2} value={formSupportDetails} onChange={(e) => setFormSupportDetails(e.target.value)} placeholder="Toelichting ondersteuning..." className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500" />
+    </div>
+      <textarea rows={2} value={formSupportDetails} onChange={(e) => setFormSupportDetails(e.target.value)} placeholder="Toelichting ondersteuning..." className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500" />
     </div>
 
     <div className="border-t border-slate-900 pt-2">
