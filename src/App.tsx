@@ -747,17 +747,12 @@ const handleSaveContactInfo = async () => {
                         <textarea rows={2} value={formSafeEnvDetails} onChange={(e) => setFormSafeEnvDetails(e.target.value)} className="w-full text-xs p-2 bg-slate-900 border border-slate-800 text-white rounded-lg focus:outline-hidden" placeholder="Toelichting over sfeer/omgeving..." />
                       </div>
 
-                      <div className="border-t border-slate-900 pt-2">
-                        <label className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider block mb-1">3. Begeleidingsgesprek gewenst?</label>
-                        <div className="grid grid-cols-2 gap-2 mb-1">
-                          <button type="button" onClick={() => setFormNeedsSupport(true)} className={`py-1 rounded text-xs font-bold border cursor-pointer ${formNeedsSupport ? 'bg-amber-950 border-amber-500 text-amber-300' : 'bg-slate-900 text-slate-400 border-transparent'}`}>Contact gewenst 💬</button>
-                          <button type="button" onClick={() => setFormNeedsSupport(false)} className={`py-1 rounded text-xs font-bold border cursor-pointer ${!formNeedsSupport ? 'bg-slate-900 text-emerald-400 border-slate-850' : 'bg-slate-900 text-slate-400 border-transparent'}`}>Nee, gaat goed</button>
-                        </div>
-                        <textarea rows={2} value={formSupportDetails} onChange={(e) => setFormSupportDetails(e.target.value)} className="w-full text-xs p-2 bg-slate-900 border border-slate-800 text-white rounded-lg focus:outline-hidden" placeholder="Toelichting ondersteuning..." />
-                      </div>
-
-                      <div className="border-t border-slate-900 pt-2">
-                        <label className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider block mb-1">3b. Foto's toevoegen (Sfeer of Bewijs)</label>
+      <div className="border-t border-slate-900 pt-2">
+  <label className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider block mb-2">
+    3. Realtime Chatbox (Deelnemer & Docent)
+  </label>
+  <ChatBox studentId={studentId} userRole="student" />
+</div>                  
                         <label className="flex items-center justify-center gap-1.5 border border-dashed border-indigo-500 bg-indigo-950/30 py-2 rounded-lg cursor-pointer text-[10.5px] font-bold text-indigo-300 hover:bg-indigo-950/50">
                           <Camera className="h-4 w-4" /> <span>Kies of maak foto</span>
                           <input type="file" accept="image/*" multiple onChange={handlePhotoUploadChange} className="hidden" />
