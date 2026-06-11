@@ -45,7 +45,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { Student, StudentStatus, LocationAccuracy, AuditLog } from './types';
 import { supabase } from './supabaseClient';
-import { ChatBox } from './ChatBox';
+
 const getMapUrl = (student: any): string => {
   if (!student) return "https://www.openstreetmap.org/export/embed.html?bbox=-4.5,36.5,-4.3,36.9&layer=mapnik";
   const lat = student.latitude || 36.7213;
@@ -1248,6 +1248,104 @@ const handleSaveContactInfo = async () => {
         <div>© 2026 CIOS GlobalLink — Realtime Supabase Database Connected</div>
       </footer>
 
+    </div>
+  );
+}// ----------------------------------------------------------------
+// REALTIME CHATBOX COMPONENT
+// ----------------------------------------------------------------
+export function ChatBox({ studentId, userRole }: { studentId: string; userRole: 'student' | 'teacher' }) {
+  const [messages, setMessages] = React.useState<any[]>([]);
+  const [newMessage, setNewMessage] = React.useState('');
+
+  // Haal bestaande berichten op en luister naar realtime updates
+  React.useEffect(() => {
+    if (!studentId) return;
+
+    // 1. Ophalen historische berichten
+    const fetchMessages = async () => {
+      const { data, error } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('student_id', studentId)
+        .order('created_at', { ascending: true });
+
+      if (!error && data) setMessages(data);
+    };
+
+    fetchMessages();
+
+    // 2. Luister live naar wijzigingen in de database
+    const channel = supabase
+      .channel(`public:messages:student_id=eq.${studentId}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', scheme: 'public', table: 'messages', filter: `student_id=eq.${studentId}` },
+        (payload) => {
+          setMessages((current) => [...current, payload.new]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [studentId]);
+
+  // Bericht verzenden naar Supabase
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMessage.trim() || !studentId) return;
+
+    const messageText = newMessage;
+    setNewMessage('');
+
+    const { error } = await supabase.from('messages').insert([
+      {
+        student_id: studentId,
+        text: messageText,
+        sender: userRole,
+        created_at: new Date().toISOString(),
+      },
+    ]);
+
+    if (error) {
+      console.error('Fout bij verzenden:', error.message);
+    }
+  };
+
+  return (
+    <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-3 flex flex-col h-64 justify-between">
+      {/* Berichtenlijst */}
+      <div className="overflow-y-auto space-y-2 pr-1 mb-2">
+        {messages.length === 0 ? (
+          <p className="text-[11px] text-slate-500 italic text-center pt-8">Nog geen berichten. Typ hieronder een bericht om de chat te starten.</p>
+        ) : (
+          messages.map((msg) => (
+            <div key={msg.id} className={`flex flex-col ${msg.sender === userRole ? 'items-end' : 'items-start'}`}>
+              <div className={`max-w-[85%] rounded-lg px-2.5 py-1.5 text-xs ${msg.sender === userRole ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-200'}`}>
+                {msg.text}
+              </div>
+              <span className="text-[9px] text-slate-500 mt-0.5 px-1">
+                {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Invoerveld */}
+      <form onSubmit={handleSendMessage} className="flex gap-2 border-t border-slate-800 pt-2">
+        <input
+          type="text"
+          value={newMessage}
+          onChange={(e) => setNewMessage(e.target.value)}
+          placeholder="Typ een bericht..."
+          className="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+        />
+        <button type="submit" className="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors">
+          Stuur
+        </button>
+      </form>
     </div>
   );
 }
