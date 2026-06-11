@@ -754,7 +754,7 @@ const handleSaveContactInfo = async () => {
                           <button type="button" onClick={() => setFormNeedsSupport(false)} className={`py-1 rounded text-xs font-bold border cursor-pointer ${!formNeedsSupport ? 'bg-slate-900 text-emerald-400 border-slate-850' : 'bg-slate-900 text-slate-400 border-transparent'}`}>Nee, gaat goed</button>
                         </div>
                         <textarea rows={2} value={formSupportDetails} onChange={(e) => setFormSupportDetails(e.target.value)} className="w-full text-xs p-2 bg-slate-900 border border-slate-800 text-white rounded-lg focus:outline-hidden" placeholder="Toelichting ondersteuning..." />
-                        <ChatBox studentId={studentId} userRole="student" />
+                      {studentId && <ChatBox studentId={studentId} userRole="student" />}  
                       </div> 
 
                       <div className="border-t border-slate-900 pt-2">
