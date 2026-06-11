@@ -45,7 +45,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { Student, StudentStatus, LocationAccuracy, AuditLog } from './types';
 import { supabase } from './supabaseClient';
-import { ChatBox } from './components/ChatBox';
+import { ChatBox } from './ChatBox';
 const getMapUrl = (student: any): string => {
   if (!student) return "https://www.openstreetmap.org/export/embed.html?bbox=-4.5,36.5,-4.3,36.9&layer=mapnik";
   const lat = student.latitude || 36.7213;
