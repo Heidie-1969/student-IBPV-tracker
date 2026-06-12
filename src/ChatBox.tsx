@@ -35,10 +35,10 @@ export function ChatBox({ studentId, userRole }: ChatBoxProps) {
 
     // Realtime kanaal openen
     const channel = supabase
-      .channel(`public:messages:student_id=eq.${studentId}`)
+      .channel(`public:student_messages:student_id=eq.${studentId}`)
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'messages', filter: `student_id=eq.${studentId}` },
+        { event: 'INSERT', schema: 'public', table: 'student_messages', filter: `student_id=eq.${studentId}` },
         (payload) => {
           setMessages((current) => {
             // Voorkom dubbele berichten in de lokale lijst
