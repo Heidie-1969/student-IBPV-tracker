@@ -3,12 +3,22 @@ import { supabase } from './supabaseClient';
 
 interface ChatBoxProps {
   studentId: string;
-  userRole: 'student' | 'teacher';
+  userRole: 'student' | 'teacher' | 'STUDENT' | 'COÖRDINATOR';
 }
 
 export function ChatBox({ studentId, userRole }: ChatBoxProps) {
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState('');
+  
+  // Haal de actuele ingelogde user op uit supabase als achtervang
+  const [userId, setUserId] = useState<string | null>(null);
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (data?.user) setUserId(data.user.id);
+    });
+  }, []);
+const effectiveStudentId = (userRole === 'student' || userRole === 'STUDENT') ? (studentId || userId) : studentId;
+  
 
   // Functie om handmatig berichten op te halen
   const fetchMessages = async () => {
@@ -31,14 +41,14 @@ export function ChatBox({ studentId, userRole }: ChatBoxProps) {
   useEffect(() => {
     fetchMessages();
 
-    if (!studentId || !supabase) return;
+   if (!effectiveStudentId || !supabase) return; 
 
     // Realtime kanaal openen
     const channel = supabase
-      .channel(`public:student_messages:student_id=eq.${studentId}`)
+      .channel(`public:student_messages:student_id=eq.${effectiveStudentId}`)
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'student_messages', filter: `student_id=eq.${studentId}` },
+        { event: 'INSERT', schema: 'public', table: 'student_messages', filter: `student_id=eq.${effectiveStudentId}` },
         (payload) => {
           setMessages((current) => {
             // Voorkom dubbele berichten in de lokale lijst
@@ -68,7 +78,7 @@ export function ChatBox({ studentId, userRole }: ChatBoxProps) {
       const { error } = await supabase
         .from('student_messages')
         .insert({
-          student_id: String(studentId),
+          student_id: String(effectiveStudentId),
           text: messageText,
           sender: String(userRole)
            }); 
