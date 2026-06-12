@@ -9,26 +9,21 @@ interface ChatBoxProps {
 export function ChatBox({ studentId, userRole }: ChatBoxProps) {
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState('');
-  
-  // Haal de actuele ingelogde user op uit supabase als achtervang
-  const [userId, setUserId] = useState<string | null>(null);
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (data?.user) setUserId(data.user.id);
-    });
-  }, []);
-const effectiveStudentId = (userRole === 'student' || userRole === 'STUDENT') ? (studentId || userId) : studentId;
-  
 
-  // Functie om handmatig berichten op te halen
+  // Synchroniseer rollen naar de exacte kleine letters die de database verwacht
+  const isStudent = userRole === 'student' || userRole === 'STUDENT';
+  const cleanUserRole = isStudent ? 'student' : 'teacher';
+  const effectiveStudentId = studentId;
+
+  // Haal berichten veilig op via id-sortering
   const fetchMessages = async () => {
-    if (!studentId || !supabase) return;
+    if (!effectiveStudentId || !supabase) return;
     try {
       const { data, error } = await supabase
         .from('student_messages')
         .select('*')
-        .eq('student_id', studentId)
-        .order('created_at', { ascending: true });
+        .eq('student_id', effectiveStudentId)
+        .order('id', { ascending: true });
 
       if (!error && data) {
         setMessages(data);
@@ -41,9 +36,9 @@ const effectiveStudentId = (userRole === 'student' || userRole === 'STUDENT') ? 
   useEffect(() => {
     fetchMessages();
 
-   if (!effectiveStudentId || !supabase) return; 
+    if (!effectiveStudentId || !supabase) return; 
 
-    // Realtime kanaal openen
+    // Realtime verbinding openen
     const channel = supabase
       .channel(`public:student_messages:student_id=eq.${effectiveStudentId}`)
       .on(
@@ -51,7 +46,6 @@ const effectiveStudentId = (userRole === 'student' || userRole === 'STUDENT') ? 
         { event: 'INSERT', schema: 'public', table: 'student_messages', filter: `student_id=eq.${effectiveStudentId}` },
         (payload) => {
           setMessages((current) => {
-            // Voorkom dubbele berichten in de lokale lijst
             if (current.some(m => m.id === payload.new.id)) return current;
             return [...current, payload.new];
           });
@@ -64,53 +58,51 @@ const effectiveStudentId = (userRole === 'student' || userRole === 'STUDENT') ? 
         supabase.removeChannel(channel);
       }
     };
-  }, [studentId]);
+  }, [effectiveStudentId]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim() || !studentId || !supabase) return;
+    if (!newMessage.trim() || !effectiveStudentId || !supabase) return;
 
-    const messageText = newMessage;
+    const messageText = newMessage.trim();
     setNewMessage('');
 
     try {
-      // Sla direct op in de tabel
+      // Gebruik de juiste databasekolommen: 'message' en 'sender'
       const { error } = await supabase
         .from('student_messages')
         .insert({
           student_id: String(effectiveStudentId),
-          text: messageText,
-          sender: String(userRole)
-           }); 
-      
+          message: messageText,
+          sender: cleanUserRole
+        }); 
 
       if (error) {
-        console.error('Supabase fout:', error.message);
+        console.error('Supabase databasefout:', error.message);
       } else {
-        // Direct lokaal verversen mocht realtime vertraging hebben
         fetchMessages();
       }
     } catch (err) {
-      console.error('Verzendfout:', err);
+      console.error('Netwerk/Verzendfout:', err);
     }
   };
 
   return (
-    <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-3 flex flex-col h-64 justify-between mt-4">
+    <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-3 flex flex-col h-64 justify-between mt-4 text-slate-900">
       <div className="overflow-y-auto space-y-2 pr-1 mb-2">
         {messages.length === 0 ? (
-          <p className="text-[11px] text-slate-500 italic text-center pt-8">Nog geen berichten. Typ hieronder een bericht om te chatten.</p>
+          <p className="text-[11px] text-slate-500 italic text-center pt-8">Nog geen berichten. Typ hieronder een bericht om de chat te starten.</p>
         ) : (
-          messages.map((msg) => (
-            <div key={msg.id} className={`flex flex-col ${msg.sender === userRole ? 'items-end' : 'items-start'}`}>
-              <div className={`max-w-[85%] rounded-lg px-2.5 py-1.5 text-xs ${msg.sender === userRole ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-200'}`}>
-                {msg.text}
+          messages.map((msg) => {
+            const isMyMessage = msg.sender === cleanUserRole;
+            return (
+              <div key={msg.id} className={`flex flex-col ${isMyMessage ? 'items-end' : 'items-start'}`}>
+                <div className={`max-w-[85%] rounded-lg px-2.5 py-1.5 text-xs ${isMyMessage ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-200'}`}>
+                  {msg.message}
+                </div>
               </div>
-              <span className="text-[9px] text-slate-500 mt-0.5 px-1">
-                {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </span>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 
@@ -129,4 +121,3 @@ const effectiveStudentId = (userRole === 'student' || userRole === 'STUDENT') ? 
     </div>
   );
 }
-
