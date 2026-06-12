@@ -1132,5 +1132,12 @@ export default function App() {
           </div>
         )}
       </AnimatePresence>
-
+      {/* Footer */}
       <footer className="h-10 bg-slate-100 border-t px-4 sm:px-8 flex items-center justify-between text-[9px] text-slate-500 font-bold font-mono tracking-widest mt-auto uppercase">
+        <div>Zuidwest-Nederland Cloud monitor</div>
+        <div>© 2026 CIOS GlobalLink — Realtime Supabase Database Connected</div>
+      </footer>
+
+    </div>
+  );
+}
