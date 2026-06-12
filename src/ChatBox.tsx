@@ -119,3 +119,4 @@ export function ChatBox({ studentId, userRole }: ChatBoxProps) {
     </div>
   );
 }
+
