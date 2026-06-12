@@ -70,9 +70,9 @@ export function ChatBox({ studentId, userRole }: ChatBoxProps) {
         .insert({
           student_id: String(studentId),
           text: messageText,
-          sender: String(userRole),
-          created_at: new Date().toISOString()
-        });
+          sender: String(userRole)
+           }); 
+      
 
       if (error) {
         console.error('Supabase fout:', error.message);
