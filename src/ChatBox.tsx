@@ -3,19 +3,18 @@ import { supabase } from './supabaseClient';
 
 interface ChatBoxProps {
   studentId: string;
-  userRole: 'student' | 'teacher' | 'STUDENT' | 'COÖRDINATOR';
+  userRole: string; // Flexibel ingesteld om alle varianten op te vangen
 }
 
 export function ChatBox({ studentId, userRole }: ChatBoxProps) {
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState('');
 
-  // Synchroniseer rollen naar de exacte kleine letters die de database verwacht
-  const isStudent = userRole === 'student' || userRole === 'STUDENT';
+  // Zorg dat de rol altijd 'student' of 'teacher' wordt voor de database
+  const isStudent = String(userRole).toLowerCase().includes('student');
   const cleanUserRole = isStudent ? 'student' : 'teacher';
   const effectiveStudentId = studentId;
 
-  // Haal berichten veilig op via id-sortering
   const fetchMessages = async () => {
     if (!effectiveStudentId || !supabase) return;
     try {
@@ -38,7 +37,6 @@ export function ChatBox({ studentId, userRole }: ChatBoxProps) {
 
     if (!effectiveStudentId || !supabase) return; 
 
-    // Realtime verbinding openen
     const channel = supabase
       .channel(`public:student_messages:student_id=eq.${effectiveStudentId}`)
       .on(
@@ -68,7 +66,6 @@ export function ChatBox({ studentId, userRole }: ChatBoxProps) {
     setNewMessage('');
 
     try {
-      // Gebruik de juiste databasekolommen: 'message' en 'sender'
       const { error } = await supabase
         .from('student_messages')
         .insert({
@@ -88,16 +85,18 @@ export function ChatBox({ studentId, userRole }: ChatBoxProps) {
   };
 
   return (
-    <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-3 flex flex-col h-64 justify-between mt-4 text-slate-900">
+    <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 flex flex-col h-64 justify-between mt-4">
       <div className="overflow-y-auto space-y-2 pr-1 mb-2">
         {messages.length === 0 ? (
-          <p className="text-[11px] text-slate-500 italic text-center pt-8">Nog geen berichten. Typ hieronder een bericht om de chat te starten.</p>
+          <p className="text-[11px] text-slate-400 italic text-center pt-8">
+            Nog geen berichten. Typ hieronder een bericht om de chat te starten.
+          </p>
         ) : (
           messages.map((msg) => {
             const isMyMessage = msg.sender === cleanUserRole;
             return (
               <div key={msg.id} className={`flex flex-col ${isMyMessage ? 'items-end' : 'items-start'}`}>
-                <div className={`max-w-[85%] rounded-lg px-2.5 py-1.5 text-xs ${isMyMessage ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-200'}`}>
+                <div className={`max-w-[85%] rounded-lg px-2.5 py-1.5 text-xs ${isMyMessage ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-100'}`}>
                   {msg.message}
                 </div>
               </div>
