@@ -266,7 +266,7 @@ export default function App() {
         }
       } catch (err) {
         setCoordSearchMessage('Locatieserver offline. Voer handmatig in.');
-      } verify {
+      } finally {
         setIsSearchingCoords(false);
       }
     }, 1000);
